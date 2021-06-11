@@ -19,7 +19,7 @@ import time
 import sys
 from abc import ABC
 
-from sagemaker_inference import environment
+from sagemaker_inference import environment, utils, content_types
 from transformers.pipelines import SUPPORTED_TASKS
 
 from mms.service import PredictionException
@@ -112,18 +112,19 @@ class HuggingFaceHandlerService(ABC):
             )
         return hf_pipeline
 
-    def preprocess(self, input_data):
+    def preprocess(self, input_data, content_type):
         """
         The preprocess handler is responsible for deserializing the input data into
         an object for prediction, can handle JSON.
         The preprocess handler can be overridden for data or feature transformation,
         Args:
             input_data: the request payload serialized in the content_type format
+            content_type: the request content_type
 
         Returns:
             decoded_input_data (dict): deserialized input_data into a Python dictonary.
         """
-        decoded_input_data = decoder_encoder.decode(input_data)
+        decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
     def predict(self, data):
@@ -140,28 +141,24 @@ class HuggingFaceHandlerService(ABC):
         inputs = data.pop("inputs", data)
         parameters = data.pop("parameters", None)
 
-        start_time = time.time()
         # pass inputs with all kwargs in data
         if parameters is not None:
             prediction = self.model(inputs, **parameters)
         else:
             prediction = self.model(inputs)
-        # add raw predict metric
-        self.context.metrics.add_time("RawPredictTime", int(round((time.time() - start_time) * 1000)), None, "ms")
-
-        # logger.info(f"inference time {time.time()-start_time}s")
         return prediction
 
-    def postprocess(self, prediction):
+    def postprocess(self, prediction, accept):
         """
         The postprocess handler is responsible for serializing the prediction result to
         the desired accept type, can handle JSON.
         The postprocess handler can be overridden for inference response transformation
         Args:
             prediction (dict): a prediction result from predict
+            accept (str): type which the output data needs to be serialized
         Returns: output data serialized
         """
-        return decoder_encoder.encode(prediction)
+        return decoder_encoder.encode(prediction, accept)
 
     def handle(self, data, context):
         """Handles an inference request with input data and makes a prediction.
@@ -181,12 +178,31 @@ class HuggingFaceHandlerService(ABC):
             if not self.initialized:
                 self.initialize(context)
 
-            input_data = data[0].get("body").decode("utf-8")
+            input_data = data[0].get("body")
 
-            processed_data = self.preprocess(input_data)
+            request_property = context.request_processor[0].get_request_properties()
+            content_type = utils.retrieve_content_type_header(request_property)
+            accept = request_property.get("Accept") or request_property.get("accept")
+
+            if not accept or accept == content_types.ANY:
+                accept = content_types.JSON
+
+            if content_type in content_types.UTF8_TYPES:
+                input_data = input_data.decode("utf-8")
+
+            # run pipeline
+            processed_data = self.preprocess(input_data, content_type)
+            # track predict time
+            predict_start = time.time()
             predictions = self.predict(processed_data)
-            output = self.postprocess(predictions)
-            return [output]
+            predict_end = time.time()
+            response = self.postprocess(predictions, accept)
+
+            context.metrics.add_time("RawPredictTime", round((predict_end - predict_start) * 1000, 2))
+
+            context.set_response_content_type(0, accept)
+            return [response]
+
         except Exception as e:
             raise PredictionException(str(e), 400)
 
