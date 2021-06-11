@@ -15,7 +15,15 @@ import datetime
 import json
 
 import numpy as np
-from sagemaker_inference import content_types, errors
+from sagemaker_inference import (
+    content_types,
+    errors,
+    _array_to_npy,
+    _array_to_csv,
+    _npy_to_numpy,
+    _csv_to_numpy,
+    _npz_to_sparse,
+)
 
 
 def decode_json(content):
@@ -56,13 +64,14 @@ def encode_json(content):
 
 
 _encoder_map = {
-    # content_types.NPY: _array_to_npy,
-    # content_types.CSV: _array_to_csv,
+    content_types.NPY: _array_to_npy,
+    content_types.CSV: _array_to_csv,
     content_types.JSON: encode_json,
 }
 _decoder_map = {
-    # content_types.NPY: _array_to_npy,
-    # content_types.CSV: _array_to_csv,
+    content_types.NPY: _npy_to_numpy,
+    content_types.CSV: _csv_to_numpy,
+    content_types.NPZ: _npz_to_sparse,
     content_types.JSON: decode_json,
 }
 
