@@ -15,14 +15,18 @@ import datetime
 import json
 
 import numpy as np
-from sagemaker_inference import (
-    content_types,
-    errors,
-    _array_to_npy,
-    _array_to_csv,
+from sagemaker_inference.decoder import (
     _npy_to_numpy,
     _csv_to_numpy,
     _npz_to_sparse,
+)
+from sagemaker_inference.encoder import (
+    _array_to_npy,
+    _array_to_csv,
+)
+from sagemaker_inference import (
+    content_types,
+    errors,
 )
 
 

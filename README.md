@@ -123,10 +123,10 @@ model.tar.gz/
 In this example, `pytroch_model.bin` is the model file saved from training, `inference.py` is the custom inference module, and `requirements.txt` is a requirements file to add additional dependencies.
 The custom module can override the following methods:  
 
-* `load_fn(model_dir)`: overrides the default method for loading the model, the return value `model` will be used in the `predict()` for predicitions. It receives argument the `model_dir`, where your `model.tar.gz` is saved.
-* `preprocess_fn(input_data)`: overrides the default method for prerprocessing, the return value `data` will be used in the `predict()` method for predicitions. It receives the body of your request (raw).
-* `predict(processed_data)`: overrides the default method for predictions, the return value `predictions` will be used in the `preprocess()` method.
-* `postprocess(processed_data)`: overrides the default method for preprocessing, the return value `predictions` will be the respond of your request(e.g.`JSON`).
+* `load_fn(model_dir)`: overrides the default method for loading the model, the return value `model` will be used in the `predict()` for predicitions. It receives argument the `model_dir`, the path to your unzipped `model.tar.gz`.
+* `preprocess_fn(input_data, content_type)`: overrides the default method for prerprocessing, the return value `data` will be used in the `predict()` method for predicitions. The input is `input_data`, the raw body of your request and `content_type`, the content type form the request Header.
+* `predict(processed_data)`: overrides the default method for predictions, the return value `predictions` will be used in the `postprocess()` method. The input is `processed_data`, the result of the `preprocess()` method.
+* `postprocess(prediction, accept)`: overrides the default method for postprocessing, the return value `result` will be the respond of your request(e.g.`JSON`). The inputs are `predictions`, the result of the `predict()` method and `accept` the return accept type from the HTTP Request, e.g. `application/json`
 
 
 

@@ -18,10 +18,11 @@ import tempfile
 import pytest
 from transformers.testing_utils import require_torch, slow
 
-from mms.context import Context
+from mms.context import Context, RequestProcessor
+from mms.metrics.metrics_store import MetricsStore
 from sagemaker_huggingface_inference_toolkit import handler_service
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
-
+from sagemaker_inference import content_types
 
 TASK = "text-classification"
 MODEL = "sshleifer/tiny-dbmdz-bert-large-cased-finetuned-conll03-english"
@@ -69,6 +70,8 @@ def test_handle(inference_handler):
             model_dir=tmpdirname,
         )
         CONTEXT = Context(MODEL, storage_folder, {}, 1, -1, "1.1.4")
+        CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
+        CONTEXT.metrics = MetricsStore(1, MODEL)
 
         inference_handler.initialize(CONTEXT)
         json_data = json.dumps(INPUT)
@@ -97,13 +100,13 @@ def test_load(inference_handler):
 
 def test_preprocess(inference_handler):
     json_data = json.dumps(INPUT)
-    decoded_input_data = inference_handler.preprocess(json_data)
+    decoded_input_data = inference_handler.preprocess(json_data, content_types.JSON)
     assert "inputs" in decoded_input_data
 
 
 def test_preprocess_bad_content_type(inference_handler):
     with pytest.raises(json.decoder.JSONDecodeError):
-        inference_handler.preprocess(b"")
+        inference_handler.preprocess(b"", content_types.JSON)
 
 
 @require_torch
@@ -120,7 +123,7 @@ def test_predict(inference_handler):
 
 
 def test_postprocess(inference_handler):
-    output = inference_handler.postprocess(OUTPUT)
+    output = inference_handler.postprocess(OUTPUT, content_types.JSON)
     assert isinstance(output, str)
 
 
@@ -130,10 +133,13 @@ def test_validate_and_initialize_user_module(inference_handler):
     inference_handler.environment
 
     inference_handler.initialize(CONTEXT)
+    CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
+    CONTEXT.metrics = MetricsStore(1, MODEL)
+
     prediction = inference_handler.handle([{"body": b""}], CONTEXT)
     assert "output" in prediction[0]
 
     assert inference_handler.load({}) == "model"
-    assert inference_handler.preprocess({}) == "data"
+    assert inference_handler.preprocess({}, "") == "data"
     assert inference_handler.predict({}) == "output"
-    assert inference_handler.postprocess("output") == "output"
+    assert inference_handler.postprocess("output", "") == "output"
