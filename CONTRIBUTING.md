@@ -1,19 +1,3 @@
-<!--  
-Copyright 2021 The HuggingFace Team, Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-     http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License. 
--->
-
 # How to contribute to transformers?
 
 Everyone is welcome to contribute, and we value everybody's contribution. Code
@@ -78,6 +62,6 @@ If you discover a potential security issue in this project we ask that you notif
 
 ## Licensing
 
-See the [LICENSE](https://github.com/huggingface/sagemaker_huggingface_inference_toolkit/blob/master/LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
+See the [LICENSE](https://github.com/aws/sagemaker-huggingface-inference-toolkit/blob/main/LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
 
 We may ask you to sign a [Contributor License Agreement (CLA)](http://en.wikipedia.org/wiki/Contributor_License_Agreement) for larger changes.

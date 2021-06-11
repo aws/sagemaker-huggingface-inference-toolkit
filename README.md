@@ -1,18 +1,3 @@
-<!---
-Copyright 2021 The HuggingFace Team, Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
--->
 <div style="display:flex; text-align:center;">
 <img src="https://huggingface.co/front/assets/huggingface_logo.svg" width="100"/> 
 <img src="https://github.com/aws/sagemaker-inference-toolkit/raw/master/branding/icon/sagemaker-banner.png" width="450"/>
@@ -62,8 +47,8 @@ huggingface_model.deploy(initial_instance_count=1,instance_type="ml.m5.xlarge")
 ```
 
 
-**Create a Amazon SageMaker endpoint with a model from the [🤗 Hub](https://huggingface.co/models).**
-
+**Create a Amazon SageMaker endpoint with a model from the [🤗 Hub](https://huggingface.co/models).**  
+_note: This is an experimental feature, where the model will be loaded after the endpoint is created. Not all sagemaker features are supported, e.g. MME_
 ```python
 from sagemaker.huggingface import HuggingFaceModel
 # Hub Model configuration. https://huggingface.co/models
@@ -149,15 +134,11 @@ The custom module can override the following methods:
 ---
 ## 🤝 Contributing
 
-Please read
-`CONTRIBUTING.md <https://github.com/aws/sagemaker-pytorch-container/blob/master/CONTRIBUTING.md>`__
+Please read [CONTRIBUTING.md](https://github.com/aws/sagemaker-huggingface-inference-toolkit/blob/main/CONTRIBUTING.md)
 for details on our code of conduct, and the process for submitting pull
 requests to us.
 
 ---
 ## 📜  License
 
-
-SageMaker PyTorch Serving Container is licensed under the Apache 2.0 License. It is copyright 2018 Amazon
-.com, Inc. or its affiliates. All Rights Reserved. The license is available at:
-http://aws.amazon.com/apache2.0/
+SageMaker Hugging Face Inference Toolkit is licensed under the Apache 2.0 License.

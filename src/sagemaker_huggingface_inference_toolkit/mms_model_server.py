@@ -45,8 +45,6 @@ logger = logging.get_logger()
 DEFAULT_HANDLER_SERVICE = handler_service.__name__
 
 DEFAULT_MMS_MODEL_DIRECTORY = os.path.join(os.getcwd(), ".sagemaker/mms/models")
-# DEFAULT_MMS_MODEL_DIRECTORY = "/opt/ml"  # to overwrite models and not save twice
-DEFAULT_MMS_MODEL_NAME = "model"
 MODEL_STORE = "/" if ENABLE_MULTI_MODEL else DEFAULT_MMS_MODEL_DIRECTORY
 
 
