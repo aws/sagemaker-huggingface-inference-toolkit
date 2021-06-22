@@ -61,17 +61,15 @@ extras["quality"] = [
 
 extras["all"] = extras["test"] + extras["quality"] + extras["benchmark"] + extras["transformers"] + extras["mms"]
 
-
 setup(
-    name="sagemaker_huggingface_inference_toolkit",
-    version="0.0.1.dev0",
-    author="Philipp Schmid",
-    author_email="philipp@huggingface.co",
+    name="sagemaker-huggingface-inference-toolkit",
+    version="0.1.0",
+    author="HuggingFace and Amazon Web Services",
     description="Open source library for running inference workload with Hugging Face Deep Learning Containers on Amazon SageMaker.",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="NLP deep-learning transformer pytorch tensorflow BERT GPT GPT-2 AWS Amazon SageMaker Cloud",
-    url="https://github.com/huggingface/sagemaker_huggingface_inference_toolkit",
+    url="https://github.com/aws/sagemaker-huggingface-inference-toolkit",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     install_requires=install_requires,
