@@ -127,7 +127,7 @@ class HuggingFaceHandlerService(ABC):
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
-    def predict(self, data):
+    def predict(self, data, model):
         """The predict handler is responsible for model predictions. Calls the `__call__` method of the provided `Pipeline`
         on decoded_input_data deserialized in input_fn. Runs prediction on GPU if is available.
         The predict handler can be overridden to implement the model inference.
@@ -143,9 +143,9 @@ class HuggingFaceHandlerService(ABC):
 
         # pass inputs with all kwargs in data
         if parameters is not None:
-            prediction = self.model(inputs, **parameters)
+            prediction = model(inputs, **parameters)
         else:
-            prediction = self.model(inputs)
+            prediction = model(inputs)
         return prediction
 
     def postprocess(self, prediction, accept):
@@ -194,7 +194,7 @@ class HuggingFaceHandlerService(ABC):
             processed_data = self.preprocess(input_data, content_type)
             # track predict time
             predict_start = time.time()
-            predictions = self.predict(processed_data)
+            predictions = self.predict(processed_data, self.model)
             predict_end = time.time()
             response = self.postprocess(predictions, accept)
 
@@ -214,10 +214,17 @@ class HuggingFaceHandlerService(ABC):
         if importlib.util.find_spec(user_module_name) is not None:
             user_module = importlib.import_module(user_module_name)
 
-            load_fn = getattr(user_module, "load_fn", None)
-            preprocess_fn = getattr(user_module, "preprocess_fn", None)
+            load_fn = getattr(user_module, "model_fn", None)
+            preprocess_fn = getattr(user_module, "input_fn", None)
             predict_fn = getattr(user_module, "predict_fn", None)
-            postprocess_fn = getattr(user_module, "postprocess_fn", None)
+            postprocess_fn = getattr(user_module, "output_fn", None)
+            transform_fn = getattr(user_module, "transform_fn", None) # TODO: Handle transform_fn
+
+            if transform_fn and (preprocess_fn or predict_fn or postprocess_fn):
+                raise ValueError(
+                    "Cannot use transform_fn implementation in conjunction with "
+                    "input_fn, predict_fn, and/or output_fn implementation"
+                )
 
             if load_fn is not None:
                 self.load = load_fn
