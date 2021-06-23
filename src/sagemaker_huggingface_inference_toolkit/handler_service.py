@@ -160,6 +160,21 @@ class HuggingFaceHandlerService(ABC):
         """
         return decoder_encoder.encode(prediction, accept)
 
+    def transform_fn(self, model, input_data, content_type, accept):
+        # run pipeline
+        start_time = time.time()
+        processed_data = self.preprocess(input_data, content_type)
+        preprocess_time = time.time() - start_time
+        predictions = self.predict(processed_data, model)
+        predict_time = time.time() - preprocess_time
+        response = self.postprocess(predictions, accept)
+
+        logger.info(f"Preprocess time - {preprocess_time * 1000} ms\n"
+                    f"Predict time - {predict_time * 1000} ms\n"
+                    f"Postprocess time - {(time.time() - predict_time) * 1000} ms")
+
+        return response
+
     def handle(self, data, context):
         """Handles an inference request with input data and makes a prediction.
 
@@ -190,15 +205,11 @@ class HuggingFaceHandlerService(ABC):
             if content_type in content_types.UTF8_TYPES:
                 input_data = input_data.decode("utf-8")
 
-            # run pipeline
-            processed_data = self.preprocess(input_data, content_type)
-            # track predict time
             predict_start = time.time()
-            predictions = self.predict(processed_data, self.model)
+            response = self.transform_fn(self.model, input_data, content_type, accept)
             predict_end = time.time()
-            response = self.postprocess(predictions, accept)
 
-            context.metrics.add_time("RawPredictTime", round((predict_end - predict_start) * 1000, 2))
+            context.metrics.add_time("Transform Fn", round((predict_end - predict_start) * 1000, 2))
 
             context.set_response_content_type(0, accept)
             return [response]
@@ -218,7 +229,7 @@ class HuggingFaceHandlerService(ABC):
             preprocess_fn = getattr(user_module, "input_fn", None)
             predict_fn = getattr(user_module, "predict_fn", None)
             postprocess_fn = getattr(user_module, "output_fn", None)
-            transform_fn = getattr(user_module, "transform_fn", None) # TODO: Handle transform_fn
+            transform_fn = getattr(user_module, "transform_fn", None)
 
             if transform_fn and (preprocess_fn or predict_fn or postprocess_fn):
                 raise ValueError(
@@ -234,3 +245,5 @@ class HuggingFaceHandlerService(ABC):
                 self.predict = predict_fn
             if postprocess_fn is not None:
                 self.postprocess = postprocess_fn
+            if transform_fn is not None:
+                self.transform = transform_fn
