@@ -17,6 +17,7 @@ REGION = "us-east-1"
 os.environ["AWS_PROFILE"] = PROFILE  # setting aws profile for our boto3 client
 os.environ["AWS_DEFAULT_REGION"] = REGION  # current DLCs are only in us-east-1 available
 
+# TODO: Replace with released DLC images
 images = {
     "pytorch": {
         "cpu": "558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:cpu-0.0.1",
