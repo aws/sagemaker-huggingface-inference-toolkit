@@ -11,12 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from __future__ import absolute_import
 
+# Build release wheels as follows
+# $ SM_HF_TOOLKIT_RELEASE=1 python setup.py bdist_wheel build
+# $ twine upload --repository-url https://test.pypi.org/legacy/ dist/* # upload to test.pypi
+# Test the wheel by downloading from test.pypi
+# $ pip install -i https://test.pypi.org/simple/ sagemaker-huggingface-inference-toolkit==<version>
+# Once test is complete
+# Upload the wheel to pypi
+# $ twine upload dist/*
+
+
+
+from __future__ import absolute_import
+import os
+from datetime import date
 from setuptools import find_packages, setup
 
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
+
+VERSION = "0.1.1"
+
 install_requires = [
     "sagemaker-inference>=1.5.5",
     "huggingface_hub>=0.0.8",
@@ -63,9 +79,10 @@ extras["all"] = extras["test"] + extras["quality"] + extras["benchmark"] + extra
 
 setup(
     name="sagemaker-huggingface-inference-toolkit",
-    version="0.1.0",
+    version=VERSION if os.getenv("SM_HF_TOOLKIT_RELEASE") is not None else VERSION + 'b' + str(date.today()).replace('-', ''),
     author="HuggingFace and Amazon Web Services",
-    description="Open source library for running inference workload with Hugging Face Deep Learning Containers on Amazon SageMaker.",
+    description="Open source library for running inference workload with Hugging Face Deep Learning Containers on "
+                "Amazon SageMaker.",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="NLP deep-learning transformer pytorch tensorflow BERT GPT GPT-2 AWS Amazon SageMaker Cloud",
