@@ -13,6 +13,7 @@
 # limitations under the License.
 import json
 import os
+import sys
 import tempfile
 
 import pytest
@@ -117,7 +118,7 @@ def test_predict(inference_handler):
             model_dir=tmpdirname,
         )
         inference_handler.model = get_pipeline(task=TASK, device=-1, model_dir=storage_folder)
-        prediction = inference_handler.predict(INPUT)
+        prediction = inference_handler.predict(INPUT, inference_handler.model)
         assert "label" in prediction[0]
         assert "score" in prediction[0]
 
@@ -128,9 +129,8 @@ def test_postprocess(inference_handler):
 
 
 def test_validate_and_initialize_user_module(inference_handler):
-    model_dir = os.path.join(os.getcwd(), "tests/resources")
+    model_dir = os.path.join(os.getcwd(), "tests/resources/model_input_predict_output_fn")
     CONTEXT = Context("", model_dir, {}, 1, -1, "1.1.4")
-    inference_handler.environment
 
     inference_handler.initialize(CONTEXT)
     CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
@@ -141,5 +141,19 @@ def test_validate_and_initialize_user_module(inference_handler):
 
     assert inference_handler.load({}) == "model"
     assert inference_handler.preprocess({}, "") == "data"
-    assert inference_handler.predict({}) == "output"
+    assert inference_handler.predict({}, "model") == "output"
     assert inference_handler.postprocess("output", "") == "output"
+
+
+def test_validate_and_initialize_user_module_transform_fn():
+    os.environ["SAGEMAKER_PROGRAM"] = "inference_tranform_fn.py"
+    inference_handler = handler_service.HuggingFaceHandlerService()
+    model_dir = os.path.join(os.getcwd(), "tests/resources/model_transform_fn")
+    CONTEXT = Context("dummy", model_dir, {}, 1, -1, "1.1.4")
+
+    inference_handler.initialize(CONTEXT)
+    CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
+    CONTEXT.metrics = MetricsStore(1, MODEL)
+    assert "output" in inference_handler.handle([{"body": b"dummy"}], CONTEXT)[0]
+    assert inference_handler.load({}) == "Loading inference_tranform_fn.py"
+    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json") == "output dummy"
