@@ -75,7 +75,7 @@ class HuggingFaceHandlerService(ABC):
         self.validate_and_initialize_user_module()
 
         self.device = self.get_device()
-        self.model = self.load(model_dir=self.model_dir)
+        self.model = self.load(self.model_dir)
         self.initialized = True
         # # Load methods from file
         # if (not self._initialized) and ENABLE_MULTI_MODEL:
