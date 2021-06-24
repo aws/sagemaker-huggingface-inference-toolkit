@@ -246,4 +246,4 @@ class HuggingFaceHandlerService(ABC):
             if postprocess_fn is not None:
                 self.postprocess = postprocess_fn
             if transform_fn is not None:
-                self.transform = transform_fn
+                self.transform_fn = transform_fn
