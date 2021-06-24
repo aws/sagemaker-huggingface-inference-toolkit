@@ -133,6 +133,7 @@ class HuggingFaceHandlerService(ABC):
         The predict handler can be overridden to implement the model inference.
         Args:
             data (dict): deserialized decoded_input_data returned by the input_fn
+            model : Model returned by "model_fn".
         Returns:
             obj (dict): prediction result.
         """
@@ -161,6 +162,18 @@ class HuggingFaceHandlerService(ABC):
         return decoder_encoder.encode(prediction, accept)
 
     def transform_fn(self, model, input_data, content_type, accept):
+        """
+        Transform function ("transform_fn") can be used to write one function with pre/post-processing steps and predict step in it.
+        This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn"
+        Args:
+            model: Model returned by the model_fn above
+            input_data: Data received for inference
+            content_type: The content type of the inference data
+            accept: The response accept type.
+
+        Returns: Response in the "accept" format type.
+
+        """
         # run pipeline
         start_time = time.time()
         processed_data = self.preprocess(input_data, content_type)
