@@ -133,7 +133,7 @@ class HuggingFaceHandlerService(ABC):
         The predict handler can be overridden to implement the model inference.
         Args:
             data (dict): deserialized decoded_input_data returned by the input_fn
-            model : Model returned by "model_fn".
+            model : Model returned by the `load` method or if it is a custom module `model_fn`.
         Returns:
             obj (dict): prediction result.
         """
