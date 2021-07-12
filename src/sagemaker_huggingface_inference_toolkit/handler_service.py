@@ -75,7 +75,7 @@ class HuggingFaceHandlerService(ABC):
         self.validate_and_initialize_user_module()
 
         self.device = self.get_device()
-        self.model = self.load(model_dir=self.model_dir)
+        self.model = self.load(self.model_dir)
         self.initialized = True
         # # Load methods from file
         # if (not self._initialized) and ENABLE_MULTI_MODEL:
@@ -127,12 +127,13 @@ class HuggingFaceHandlerService(ABC):
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
-    def predict(self, data):
+    def predict(self, data, model):
         """The predict handler is responsible for model predictions. Calls the `__call__` method of the provided `Pipeline`
         on decoded_input_data deserialized in input_fn. Runs prediction on GPU if is available.
         The predict handler can be overridden to implement the model inference.
         Args:
             data (dict): deserialized decoded_input_data returned by the input_fn
+            model : Model returned by the `load` method or if it is a custom module `model_fn`.
         Returns:
             obj (dict): prediction result.
         """
@@ -143,9 +144,9 @@ class HuggingFaceHandlerService(ABC):
 
         # pass inputs with all kwargs in data
         if parameters is not None:
-            prediction = self.model(inputs, **parameters)
+            prediction = model(inputs, **parameters)
         else:
-            prediction = self.model(inputs)
+            prediction = model(inputs)
         return prediction
 
     def postprocess(self, prediction, accept):
@@ -159,6 +160,33 @@ class HuggingFaceHandlerService(ABC):
         Returns: output data serialized
         """
         return decoder_encoder.encode(prediction, accept)
+
+    def transform_fn(self, model, input_data, content_type, accept):
+        """
+        Transform function ("transform_fn") can be used to write one function with pre/post-processing steps and predict step in it.
+        This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn"
+        Args:
+            model: Model returned by the model_fn above
+            input_data: Data received for inference
+            content_type: The content type of the inference data
+            accept: The response accept type.
+
+        Returns: Response in the "accept" format type.
+
+        """
+        # run pipeline
+        start_time = time.time()
+        processed_data = self.preprocess(input_data, content_type)
+        preprocess_time = time.time() - start_time
+        predictions = self.predict(processed_data, model)
+        predict_time = time.time() - preprocess_time
+        response = self.postprocess(predictions, accept)
+
+        logger.info(f"Preprocess time - {preprocess_time * 1000} ms\n"
+                    f"Predict time - {predict_time * 1000} ms\n"
+                    f"Postprocess time - {(time.time() - predict_time) * 1000} ms")
+
+        return response
 
     def handle(self, data, context):
         """Handles an inference request with input data and makes a prediction.
@@ -190,15 +218,11 @@ class HuggingFaceHandlerService(ABC):
             if content_type in content_types.UTF8_TYPES:
                 input_data = input_data.decode("utf-8")
 
-            # run pipeline
-            processed_data = self.preprocess(input_data, content_type)
-            # track predict time
             predict_start = time.time()
-            predictions = self.predict(processed_data)
+            response = self.transform_fn(self.model, input_data, content_type, accept)
             predict_end = time.time()
-            response = self.postprocess(predictions, accept)
 
-            context.metrics.add_time("RawPredictTime", round((predict_end - predict_start) * 1000, 2))
+            context.metrics.add_time("Transform Fn", round((predict_end - predict_start) * 1000, 2))
 
             context.set_response_content_type(0, accept)
             return [response]
@@ -214,10 +238,17 @@ class HuggingFaceHandlerService(ABC):
         if importlib.util.find_spec(user_module_name) is not None:
             user_module = importlib.import_module(user_module_name)
 
-            load_fn = getattr(user_module, "load_fn", None)
-            preprocess_fn = getattr(user_module, "preprocess_fn", None)
+            load_fn = getattr(user_module, "model_fn", None)
+            preprocess_fn = getattr(user_module, "input_fn", None)
             predict_fn = getattr(user_module, "predict_fn", None)
-            postprocess_fn = getattr(user_module, "postprocess_fn", None)
+            postprocess_fn = getattr(user_module, "output_fn", None)
+            transform_fn = getattr(user_module, "transform_fn", None)
+
+            if transform_fn and (preprocess_fn or predict_fn or postprocess_fn):
+                raise ValueError(
+                    "Cannot use transform_fn implementation in conjunction with "
+                    "input_fn, predict_fn, and/or output_fn implementation"
+                )
 
             if load_fn is not None:
                 self.load = load_fn
@@ -227,3 +258,5 @@ class HuggingFaceHandlerService(ABC):
                 self.predict = predict_fn
             if postprocess_fn is not None:
                 self.postprocess = postprocess_fn
+            if transform_fn is not None:
+                self.transform_fn = transform_fn
