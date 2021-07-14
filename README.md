@@ -11,11 +11,11 @@
 
 SageMaker Hugging Face Inference Toolkit is an open-source library for serving 🤗 Transformers models on Amazon SageMaker. This library provides default pre-processing, predict and postprocessing for certain 🤗 Transformers models and tasks. It utilizes the [SageMaker Inference Toolkit](https://github.com/aws/sagemaker-inference-toolkit) for starting up the model server, which is responsible for handling inference requests.
 
-For Training, see [Run training on Amazon SageMaker](https://huggingface.co/transformers/sagemaker.html).
+For Training, see [Run training on Amazon SageMaker](https://huggingface.co/docs/sagemaker/train).
 
 For the Dockerfiles used for building SageMaker Hugging Face Containers, see [AWS Deep Learning Containers](https://github.com/aws/deep-learning-containers/tree/master/huggingface).
 
-For information on running Hugging Face jobs on Amazon SageMaker, please refer to the [🤗 Transformers documentation](https://huggingface.co/transformers/sagemaker.html).
+For information on running Hugging Face jobs on Amazon SageMaker, please refer to the [🤗 Transformers documentation](https://huggingface.co/docs/sagemaker).
 
 For notebook examples: [SageMaker Notebook Examples](https://github.com/huggingface/notebooks/tree/master/sagemaker).
 
@@ -39,6 +39,7 @@ from sagemaker.huggingface import HuggingFaceModel
 huggingface_model = HuggingFaceModel(
     transformers_version='4.4',
     pytorch_version='1.6',
+    py_version='py36',
     model_data='s3://my-trained-model/artifcats/model.tar.gz',
     role=role,
 )
@@ -60,9 +61,9 @@ hub = {
 huggingface_model = HuggingFaceModel(
     transformers_version='4.4',
     pytorch_version='1.6',
+    py_version='py36',
     env=hub,
     role=role,
-    name=hub['HF_MODEL_ID'], 
 )
 # deploy model to SageMaker Inference
 huggingface_model.deploy(initial_instance_count=1,instance_type="ml.m5.xlarge")
@@ -143,3 +144,4 @@ requests to us.
 ## 📜  License
 
 SageMaker Hugging Face Inference Toolkit is licensed under the Apache 2.0 License.
+{"mode":"full","isActive":false}
