@@ -37,8 +37,8 @@ from sagemaker.huggingface import HuggingFaceModel
 
 # create Hugging Face Model Class
 huggingface_model = HuggingFaceModel(
-    transformers_version='4.4',
-    pytorch_version='1.6',
+    transformers_version='4.6',
+    pytorch_version='1.7',
     py_version='py36',
     model_data='s3://my-trained-model/artifcats/model.tar.gz',
     role=role,
@@ -59,8 +59,8 @@ hub = {
 }
 # create Hugging Face Model Class
 huggingface_model = HuggingFaceModel(
-    transformers_version='4.4',
-    pytorch_version='1.6',
+    transformers_version='4.6',
+    pytorch_version='1.7',
     py_version='py36',
     env=hub,
     role=role,
