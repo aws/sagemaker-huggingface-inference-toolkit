@@ -124,6 +124,15 @@ class HuggingFaceHandlerService(ABC):
         Returns:
             decoded_input_data (dict): deserialized input_data into a Python dictonary.
         """
+        # raises en error when using zero-shot-classification or table-question-answering, not possible due to nested properties
+        if (
+            os.environ["HF_TASK"] == "zero-shot-classification" or os.environ["HF_TASK"] == "table-question-answering"
+        ) and content_type == content_types.CSV:
+            raise PredictionException(
+                f"content type {content_type} not support with {os.environ['HF_TASK']}, use different content_type",
+                400,
+            )
+
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
@@ -182,9 +191,11 @@ class HuggingFaceHandlerService(ABC):
         predict_time = time.time() - preprocess_time
         response = self.postprocess(predictions, accept)
 
-        logger.info(f"Preprocess time - {preprocess_time * 1000} ms\n"
-                    f"Predict time - {predict_time * 1000} ms\n"
-                    f"Postprocess time - {(time.time() - predict_time) * 1000} ms")
+        logger.info(
+            f"Preprocess time - {preprocess_time * 1000} ms\n"
+            f"Predict time - {predict_time * 1000} ms\n"
+            f"Postprocess time - {(time.time() - predict_time) * 1000} ms"
+        )
 
         return response
 

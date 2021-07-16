@@ -201,6 +201,8 @@ def infer_task_from_model_architecture(model_config_path: str, architecture_inde
             f"Inference Toolkit can only inference tasks from architectures ending with {list(ARCHITECTURES_2_TASK.keys())}."
             "Use env `HF_TASK` to define your task."
         )
+    # set env to work with
+    os.environ["HF_TASK"] = task
     return task
 
 
@@ -211,6 +213,8 @@ def infer_task_from_hub(model_id: str, revision: Optional[str] = None, use_auth_
     _api = HfApi()
     model_info = _api.model_info(repo_id=model_id, revision=revision, token=use_auth_token)
     if model_info.pipeline_tag is not None:
+        # set env to work with
+        os.environ["HF_TASK"] = model_info.pipeline_tag
         return model_info.pipeline_tag
     else:
         raise ValueError(
