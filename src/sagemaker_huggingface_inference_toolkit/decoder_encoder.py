@@ -13,16 +13,15 @@
 # limitations under the License.
 import datetime
 import json
-
+from io import StringIO
+import csv
 import numpy as np
 from sagemaker_inference.decoder import (
     _npy_to_numpy,
-    _csv_to_numpy,
     _npz_to_sparse,
 )
 from sagemaker_inference.encoder import (
     _array_to_npy,
-    _array_to_csv,
 )
 from sagemaker_inference import (
     content_types,
@@ -32,6 +31,22 @@ from sagemaker_inference import (
 
 def decode_json(content):
     return json.loads(content)
+
+
+def decode_csv(string_like):  # type: (str) -> np.array
+    """Convert a CSV object to a dictonary with list attributes.
+
+    Args:
+        string_like (str): CSV string.
+    Returns:
+        (dict): dictonatry for input
+    """
+    stream = StringIO(string_like)
+    request_list = list(csv.DictReader(stream))
+    if "inputs" in request_list[0].keys():
+        return {"inputs": [entry["inputs"] for entry in request_list]}
+    else:
+        return {"inputs": request_list}
 
 
 # https://github.com/automl/SMAC3/issues/453
@@ -67,14 +82,33 @@ def encode_json(content):
     )
 
 
+def encode_csv(content):  # type: (str) -> np.array
+    """Convert the result of a transformers pipeline to CSV.
+    Args:
+        content (dict | list): result of transformers pipeline.
+    Returns:
+        (str): object serialized to CSV
+    """
+    stream = StringIO()
+    if not isinstance(content, list):
+        content = list(content)
+
+    column_header = content[0].keys()
+    writer = csv.DictWriter(stream, column_header)
+
+    writer.writeheader()
+    writer.writerows(content)
+    return stream.getvalue()
+
+
 _encoder_map = {
     content_types.NPY: _array_to_npy,
-    content_types.CSV: _array_to_csv,
+    content_types.CSV: encode_csv,
     content_types.JSON: encode_json,
 }
 _decoder_map = {
     content_types.NPY: _npy_to_numpy,
-    content_types.CSV: _csv_to_numpy,
+    content_types.CSV: decode_csv,
     content_types.NPZ: _npz_to_sparse,
     content_types.JSON: decode_json,
 }
