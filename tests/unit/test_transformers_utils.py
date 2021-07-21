@@ -15,6 +15,7 @@ import os
 import tempfile
 
 from transformers.file_utils import is_torch_available
+from transformers import pipeline
 from transformers.testing_utils import require_tf, require_torch, slow
 
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (
@@ -28,6 +29,7 @@ from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     get_pipeline,
     infer_task_from_hub,
     infer_task_from_model_architecture,
+    wrap_conversation_pipeline,
 )
 
 
@@ -122,3 +124,38 @@ def test_infer_task_from_model_architecture():
         storage_dir = _load_model_from_hub(TASK_MODEL, tmpdirname)
         task = infer_task_from_model_architecture(f"{storage_dir}/config.json")
         assert task == "token-classification"
+
+
+@require_torch
+def test_wrap_conversation_pipeline():
+    init_pipeline = pipeline(
+        "conversational",
+        model="microsoft/DialoGPT-small",
+        tokenizer="microsoft/DialoGPT-small",
+        framework="pt",
+        device=0,
+    )
+    conv_pipe = wrap_conversation_pipeline(init_pipeline)
+    data = {
+        "past_user_inputs": ["Which movie is the best ?"],
+        "generated_responses": ["It's Die Hard for sure."],
+        "text": "Can you explain why?",
+    }
+    res = conv_pipe(data)
+    assert "conversation" in res
+    assert "generated_text" in res
+
+
+@require_torch
+def test_wrapped_pipeline():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        storage_dir = _load_model_from_hub("microsoft/DialoGPT-small", tmpdirname)
+        conv_pipe = get_pipeline("conversational", -1, storage_dir)
+        data = {
+            "past_user_inputs": ["Which movie is the best ?"],
+            "generated_responses": ["It's Die Hard for sure."],
+            "text": "Can you explain why?",
+        }
+        res = conv_pipe(data)
+        assert "conversation" in res
+        assert "generated_text" in res
