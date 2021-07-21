@@ -133,7 +133,6 @@ def test_wrap_conversation_pipeline():
         model="microsoft/DialoGPT-small",
         tokenizer="microsoft/DialoGPT-small",
         framework="pt",
-        device=0,
     )
     conv_pipe = wrap_conversation_pipeline(init_pipeline)
     data = {
