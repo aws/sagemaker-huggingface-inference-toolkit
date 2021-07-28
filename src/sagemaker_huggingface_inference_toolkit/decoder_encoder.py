@@ -42,9 +42,10 @@ def decode_csv(string_like):  # type: (str) -> np.array
         (dict): dictonatry for input
     """
     # detects if the incoming csv has headers
-    sniffer = csv.Sniffer()
-    has_header = sniffer.has_header(string_like)
-
+    if any(header in string_like.splitlines()[0].lower() for header in ["question", "context", "inputs"]):
+        has_header = True
+    else:
+        has_header = False
     # reads csv as io
     stream = StringIO(string_like)
 
@@ -53,8 +54,12 @@ def decode_csv(string_like):  # type: (str) -> np.array
         request_list = list(csv.DictReader(stream))
     else:
         # identifies the number of column and either maps "inputs" or "question, context" as header
+        sniffer = csv.Sniffer()
         delimiter = sniffer.sniff(string_like).delimiter
-        col_num = len(string_like.splitlines()[0].split(delimiter))
+        if delimiter == " ":
+            col_num = 1
+        else:
+            col_num = len(string_like.splitlines()[0].split(delimiter))
         if col_num == 1:
             col_header = ["inputs"]
         elif col_num == 2:

@@ -42,7 +42,7 @@ def test_decode_csv():
         ]
     }
     text_classification_input = "inputs\r\nI love you\r\nI like you"
-    decoded_data = decoder_encoder.decode_csv(DECODE_CSV_INPUT)
+    decoded_data = decoder_encoder.decode_csv(text_classification_input)
     assert decoded_data == {"inputs": ["I love you", "I like you"]}
 
 
@@ -56,9 +56,21 @@ def test_decode_csv_without_header():
             {"question": "where is Berlin?", "context": "Berlin is the capital of Germany"},
         ]
     }
-    text_classification_input = "inputs\r\nI love you\r\nI like you"
-    decoded_data = decoder_encoder.decode_csv(DECODE_CSV_INPUT)
-    assert decoded_data == {"inputs": ["I love you", "I like you"]}
+    text_classification_input = """@VirginAmerica What @dhepburn said.                                                                                                                           
+@VirginAmerica plus you've added commercials to the experience... tacky.                                                                                      
+@VirginAmerica I didn't today... Must mean I need to take another trip!                                                                                       
+@VirginAmerica it's really aggressive to blast obnoxious "entertainment" in your guests' faces &amp; they have little recourse                                
+@VirginAmerica and it's a really big bad thing about it                                                                                                       
+@VirginAmerica seriously would pay $30 a flight for seats that didn't have this playing.
+it's really the only bad thing about flying VA                       
+@VirginAmerica yes, nearly every time I fly VX this “ear worm” won’t go away :)                                                                               
+@VirginAmerica Really missed a prime opportunity for Men Without Hats parody, there. https://t.co/mWpG7grEZP                                                  
+@virginamerica Well, I didn't…but NOW I DO! :-D                                                                                                               
+@VirginAmerica it was amazing, and arrived an hour early. You're too good to me.                                                                              
+@VirginAmerica did you know that suicide is the second leading cause of death among teens 10-24"""
+    decoded_data = decoder_encoder.decode_csv(text_classification_input)
+    assert "inputs" in decoded_data
+    assert isinstance(decoded_data["inputs"], list)
 
 
 def test_encode_json():
