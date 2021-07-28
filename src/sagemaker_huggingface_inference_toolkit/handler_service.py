@@ -134,7 +134,6 @@ class HuggingFaceHandlerService(ABC):
             )
 
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
-        print("data", decoded_input_data)
         return decoded_input_data
 
     def predict(self, data, model):
