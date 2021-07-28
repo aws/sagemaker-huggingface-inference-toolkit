@@ -41,8 +41,28 @@ def decode_csv(string_like):  # type: (str) -> np.array
     Returns:
         (dict): dictonatry for input
     """
+    # detects if the incoming csv has headers
+    sniffer = csv.Sniffer()
+    has_header = sniffer.has_header(string_like)
+
+    # reads csv as io
     stream = StringIO(string_like)
-    request_list = list(csv.DictReader(stream))
+
+    if has_header:
+        # reads stream as dict if it has header
+        request_list = list(csv.DictReader(stream))
+    else:
+        # identifies the number of column and either maps "inputs" or "question, context" as header
+        delimiter = sniffer.sniff(string_like).delimiter
+        col_num = len(string_like.splitlines()[0].split(delimiter))
+        if col_num == 1:
+            col_header = ["inputs"]
+        elif col_num == 2:
+            col_header = ["question", "context"]
+        else:
+            raise ValueError(f"Csv without header and more than columns cannot be decoded")
+        request_list = list(csv.DictReader(stream, fieldnames=col_header))
+
     if "inputs" in request_list[0].keys():
         return {"inputs": [entry["inputs"] for entry in request_list]}
     else:

@@ -46,6 +46,21 @@ def test_decode_csv():
     assert decoded_data == {"inputs": ["I love you", "I like you"]}
 
 
+def test_decode_csv_without_header():
+    decoded_data = decoder_encoder.decode_csv(
+        "where do i live?,My name is Philipp and I live in Nuremberg\r\nwhere is Berlin?,Berlin is the capital of Germany"
+    )
+    assert decoded_data == {
+        "inputs": [
+            {"question": "where do i live?", "context": "My name is Philipp and I live in Nuremberg"},
+            {"question": "where is Berlin?", "context": "Berlin is the capital of Germany"},
+        ]
+    }
+    text_classification_input = "inputs\r\nI love you\r\nI like you"
+    decoded_data = decoder_encoder.decode_csv(DECODE_CSV_INPUT)
+    assert decoded_data == {"inputs": ["I love you", "I like you"]}
+
+
 def test_encode_json():
     encoded_data = decoder_encoder.encode_json(ENCODE_JSON_INPUT)
     assert json.loads(encoded_data) == ENCODE_JSON_INPUT
