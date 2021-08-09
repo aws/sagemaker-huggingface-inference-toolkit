@@ -20,8 +20,7 @@ from huggingface_hub import HfApi
 from huggingface_hub.file_download import cached_download, hf_hub_url
 from transformers import pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
-from transformers.pipelines import Pipeline
-
+from transformers.pipelines import Pipeline, Conversation
 
 if is_tf_available():
     import tensorflow as tf
@@ -88,6 +87,25 @@ ARCHITECTURES_2_TASK = {
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", None)
 HF_MODEL_REVISION = os.environ.get("HF_MODEL_REVISION", None)
+
+
+def wrap_conversation_pipeline(pipeline):
+    def wrapped_pipeline(inputs, *args, **kwargs):
+        converted_input = Conversation(
+            inputs["text"],
+            past_user_inputs=inputs.get("past_user_inputs", []),
+            generated_responses=inputs.get("generated_responses", []),
+        )
+        prediction = pipeline(converted_input, *args, **kwargs)
+        return {
+            "generated_text": prediction.generated_responses[-1],
+            "conversation": {
+                "past_user_inputs": prediction.past_user_inputs,
+                "generated_responses": prediction.generated_responses,
+            },
+        }
+
+    return wrapped_pipeline
 
 
 def _is_gpu_available():
@@ -232,5 +250,9 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         )
 
     hf_pipeline = pipeline(task=task, model=model_dir, tokenizer=model_dir, device=device, **kwargs)
+
+    # wrapp specific pipeline to support better ux
+    if task == "conversational":
+        hf_pipeline = wrap_conversation_pipeline(hf_pipeline)
 
     return hf_pipeline
