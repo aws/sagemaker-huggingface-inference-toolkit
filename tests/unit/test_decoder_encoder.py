@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
-
+import pytest
 from sagemaker_huggingface_inference_toolkit import decoder_encoder
+from mms.service import PredictionException
 
 
 ENCODE_JSON_INPUT = {"upper": [1425], "lower": [576], "level": [2], "datetime": ["2012-08-08 15:30"]}
@@ -44,6 +45,13 @@ def test_decode_csv():
     text_classification_input = "inputs\r\nI love you\r\nI like you"
     decoded_data = decoder_encoder.decode_csv(DECODE_CSV_INPUT)
     assert decoded_data == {"inputs": ["I love you", "I like you"]}
+
+
+def test_decode_csv_without_header():
+    with pytest.raises(PredictionException):
+        decoder_encoder.decode_csv(
+            "where do i live?,My name is Philipp and I live in Nuremberg\r\nwhere is Berlin?,Berlin is the capital of Germany"
+        )
 
 
 def test_encode_json():
