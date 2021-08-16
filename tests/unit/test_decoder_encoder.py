@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+
 import pytest
-from sagemaker_huggingface_inference_toolkit import decoder_encoder
+
 from mms.service import PredictionException
+from sagemaker_huggingface_inference_toolkit import decoder_encoder
 
 
 ENCODE_JSON_INPUT = {"upper": [1425], "lower": [576], "level": [2], "datetime": ["2012-08-08 15:30"]}

@@ -11,24 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import csv
 import datetime
 import json
 from io import StringIO
-import csv
-import numpy as np
-from mms.service import PredictionException
 
-from sagemaker_inference.decoder import (
-    _npy_to_numpy,
-    _npz_to_sparse,
-)
-from sagemaker_inference.encoder import (
-    _array_to_npy,
-)
-from sagemaker_inference import (
-    content_types,
-    errors,
-)
+import numpy as np
+from sagemaker_inference import content_types, errors
+from sagemaker_inference.decoder import _npy_to_numpy, _npz_to_sparse
+from sagemaker_inference.encoder import _array_to_npy
+
+from mms.service import PredictionException
 
 
 def decode_json(content):

@@ -17,13 +17,14 @@ import sys
 import tempfile
 
 import pytest
+from sagemaker_inference import content_types
 from transformers.testing_utils import require_torch, slow
 
 from mms.context import Context, RequestProcessor
 from mms.metrics.metrics_store import MetricsStore
 from sagemaker_huggingface_inference_toolkit import handler_service
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
-from sagemaker_inference import content_types
+
 
 TASK = "text-classification"
 MODEL = "sshleifer/tiny-dbmdz-bert-large-cased-finetuned-conll03-english"
