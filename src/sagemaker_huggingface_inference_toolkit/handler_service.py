@@ -188,7 +188,7 @@ class HuggingFaceHandlerService(ABC):
         processed_data = self.preprocess(input_data, content_type)
         preprocess_time = time.time() - start_time
         predictions = self.predict(processed_data, model)
-        predict_time = time.time() - preprocess_time
+        predict_time = time.time() - preprocess_time - start_time
         response = self.postprocess(predictions, accept)
 
         logger.info(
