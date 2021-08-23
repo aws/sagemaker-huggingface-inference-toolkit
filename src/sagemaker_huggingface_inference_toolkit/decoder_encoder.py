@@ -11,22 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import csv
 import datetime
 import json
 from io import StringIO
-import csv
+
 import numpy as np
-from sagemaker_inference.decoder import (
-    _npy_to_numpy,
-    _npz_to_sparse,
-)
-from sagemaker_inference.encoder import (
-    _array_to_npy,
-)
-from sagemaker_inference import (
-    content_types,
-    errors,
-)
+from sagemaker_inference import content_types, errors
+from sagemaker_inference.decoder import _npy_to_numpy, _npz_to_sparse
+from sagemaker_inference.encoder import _array_to_npy
+
+from mms.service import PredictionException
 
 
 def decode_json(content):
@@ -42,6 +37,13 @@ def decode_csv(string_like):  # type: (str) -> np.array
         (dict): dictonatry for input
     """
     stream = StringIO(string_like)
+    # detects if the incoming csv has headers
+    if not any(header in string_like.splitlines()[0].lower() for header in ["question", "context", "inputs"]):
+        raise PredictionException(
+            f"You need to provide the correct CSV with Header columns to use it with the inference toolkit default handler.",
+            400,
+        )
+    # reads csv as io
     request_list = list(csv.DictReader(stream))
     if "inputs" in request_list[0].keys():
         return {"inputs": [entry["inputs"] for entry in request_list]}
@@ -123,6 +125,8 @@ def decode(content, content_type=content_types.JSON):
         return decoder(content)
     except KeyError:
         raise errors.UnsupportedFormatError(content_type)
+    except PredictionException as pred_err:
+        raise pred_err
 
 
 def encode(content, content_type=content_types.JSON):
