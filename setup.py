@@ -22,7 +22,6 @@
 # $ twine upload dist/*
 
 
-
 from __future__ import absolute_import
 import os
 from datetime import date
@@ -31,7 +30,7 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "1.0.1"
+VERSION = "1.2.0"
 
 install_requires = [
     "sagemaker-inference>=1.5.5",
@@ -79,10 +78,12 @@ extras["all"] = extras["test"] + extras["quality"] + extras["benchmark"] + extra
 
 setup(
     name="sagemaker-huggingface-inference-toolkit",
-    version=VERSION if os.getenv("SM_HF_TOOLKIT_RELEASE") is not None else VERSION + 'b' + str(date.today()).replace('-', ''),
+    version=VERSION
+    if os.getenv("SM_HF_TOOLKIT_RELEASE") is not None
+    else VERSION + "b" + str(date.today()).replace("-", ""),
     author="HuggingFace and Amazon Web Services",
     description="Open source library for running inference workload with Hugging Face Deep Learning Containers on "
-                "Amazon SageMaker.",
+    "Amazon SageMaker.",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="NLP deep-learning transformer pytorch tensorflow BERT GPT GPT-2 AWS Amazon SageMaker Cloud",
