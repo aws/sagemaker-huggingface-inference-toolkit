@@ -188,13 +188,14 @@ class HuggingFaceHandlerService(ABC):
         processed_data = self.preprocess(input_data, content_type)
         preprocess_time = time.time() - start_time
         predictions = self.predict(processed_data, model)
-        predict_time = time.time() - preprocess_time
+        predict_time = time.time() - preprocess_time - start_time
         response = self.postprocess(predictions, accept)
+        postprocess_time = time.time() - predict_time - preprocess_time - start_time
 
         logger.info(
             f"Preprocess time - {preprocess_time * 1000} ms\n"
             f"Predict time - {predict_time * 1000} ms\n"
-            f"Postprocess time - {(time.time() - predict_time) * 1000} ms"
+            f"Postprocess time - {postprocess_time * 1000} ms"
         )
 
         return response
