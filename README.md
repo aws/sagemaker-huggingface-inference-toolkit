@@ -40,7 +40,7 @@ huggingface_model = HuggingFaceModel(
     transformers_version='4.6',
     pytorch_version='1.7',
     py_version='py36',
-    model_data='s3://my-trained-model/artifcats/model.tar.gz',
+    model_data='s3://my-trained-model/artifacts/model.tar.gz',
     role=role,
 )
 # deploy model to SageMaker Inference
