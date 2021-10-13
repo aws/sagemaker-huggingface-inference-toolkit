@@ -1,5 +1,6 @@
 
 include LICENSE
+include NOTICE
 include README.md
 
 recursive-exclude * __pycache__
