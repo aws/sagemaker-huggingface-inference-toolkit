@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import time
+import types
 from abc import ABC
 
 from sagemaker_inference import content_types, environment, utils
@@ -264,7 +265,7 @@ class HuggingFaceHandlerService(ABC):
                 )
 
             if load_fn is not None:
-                self.load = load_fn
+                self.load = types.MethodType(load_fn, self)
             if preprocess_fn is not None:
                 self.preprocess = preprocess_fn
             if predict_fn is not None:

@@ -1,5 +1,5 @@
-def model_fn(model_dir):
-    return "model"
+def model_fn(self, model_dir):
+    return self.context.model_name
 
 
 def input_fn(data, content_type):

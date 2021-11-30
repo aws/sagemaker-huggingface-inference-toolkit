@@ -131,7 +131,7 @@ def test_postprocess(inference_handler):
 
 def test_validate_and_initialize_user_module(inference_handler):
     model_dir = os.path.join(os.getcwd(), "tests/resources/model_input_predict_output_fn")
-    CONTEXT = Context("", model_dir, {}, 1, -1, "1.1.4")
+    CONTEXT = Context("my model", model_dir, {}, 1, -1, "1.1.4")
 
     inference_handler.initialize(CONTEXT)
     CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
@@ -140,7 +140,7 @@ def test_validate_and_initialize_user_module(inference_handler):
     prediction = inference_handler.handle([{"body": b""}], CONTEXT)
     assert "output" in prediction[0]
 
-    assert inference_handler.load({}) == "model"
+    assert inference_handler.load({}) == "my model"
     assert inference_handler.preprocess({}, "") == "data"
     assert inference_handler.predict({}, "model") == "output"
     assert inference_handler.postprocess("output", "") == "output"

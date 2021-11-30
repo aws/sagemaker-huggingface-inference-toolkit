@@ -1,7 +1,7 @@
 import os
 
 
-def model_fn(model_dir):
+def model_fn(self, model_dir):
     return f"Loading {os.path.basename(__file__)}"
 
 
