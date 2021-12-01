@@ -45,9 +45,8 @@ extras = {}
 extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.5.1"]
 
 # framework specific dependencies
-extras["torch"] = ["torch>=1.4.0"]
-extras["tensorflow-cpu"] = ["tensorflow-cpu>=2.3"]
-extras["tensorflow"] = ["tensorflow>=2.3"]
+extras["torch"] = ["torch>=1.8.0"]
+extras["tensorflow"] = ["tensorflow>=2.4.0"]
 
 # MMS Server dependencies
 extras["mms"] = ["multi-model-server>=1.1.4", "retrying"]
