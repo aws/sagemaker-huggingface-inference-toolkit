@@ -73,7 +73,7 @@ extras["quality"] = [
     "flake8>=3.8.3",
 ]
 
-extras["all"] = extras["test"] + extras["quality"] + extras["benchmark"] + extras["transformers"] + extras["mms"]
+extras["dev"] = extras["transformers"] + extras["mms"] + extras["torch"] + extras["tensorflow"]
 
 setup(
     name="sagemaker-huggingface-inference-toolkit",
