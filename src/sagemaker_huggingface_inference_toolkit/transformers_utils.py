@@ -20,7 +20,8 @@ from huggingface_hub import HfApi
 from huggingface_hub.file_download import cached_download, hf_hub_url
 from transformers import pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
-from transformers.pipelines import Pipeline, Conversation
+from transformers.pipelines import Conversation, Pipeline
+
 
 if is_tf_available():
     import tensorflow as tf

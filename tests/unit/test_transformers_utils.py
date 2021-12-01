@@ -14,8 +14,8 @@
 import os
 import tempfile
 
-from transformers.file_utils import is_torch_available
 from transformers import pipeline
+from transformers.file_utils import is_torch_available
 from transformers.testing_utils import require_tf, require_torch, slow
 
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (

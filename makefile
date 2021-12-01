@@ -1,6 +1,6 @@
 .PHONY: quality style unit-test integ-test
 
-check_dirs := src deployment docker tests
+check_dirs := src tests
 
 # run tests
 

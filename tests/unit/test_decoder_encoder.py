@@ -45,7 +45,7 @@ def test_decode_csv():
         ]
     }
     text_classification_input = "inputs\r\nI love you\r\nI like you"
-    decoded_data = decoder_encoder.decode_csv(DECODE_CSV_INPUT)
+    decoded_data = decoder_encoder.decode_csv(text_classification_input)
     assert decoded_data == {"inputs": ["I love you", "I like you"]}
 
 
