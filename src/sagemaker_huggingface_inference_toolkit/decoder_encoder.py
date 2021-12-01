@@ -40,7 +40,7 @@ def decode_csv(string_like):  # type: (str) -> np.array
     # detects if the incoming csv has headers
     if not any(header in string_like.splitlines()[0].lower() for header in ["question", "context", "inputs"]):
         raise PredictionException(
-            f"You need to provide the correct CSV with Header columns to use it with the inference toolkit default handler.",
+            "You need to provide the correct CSV with Header columns to use it with the inference toolkit default handler.",
             400,
         )
     # reads csv as io
