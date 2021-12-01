@@ -12,7 +12,7 @@ jobs:
       with:
         python-version: 3.6
     - name: Install Python dependencies
-      run: pip install -e .[test]
+      run: pip install -e .[test,transformers]
     - name: Run Unit Tests
       run: make unit-test
     # - name: Run Integration Tests
