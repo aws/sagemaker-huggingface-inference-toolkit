@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import numpy as np
 import pytest
@@ -11,23 +12,34 @@ from sagemaker import Session
 from sagemaker.model import Model
 
 
-ROLE_NAME = "sagemaker_execution_role"
-PROFILE = "hf-sm"
-REGION = "us-east-1"
-os.environ["AWS_PROFILE"] = PROFILE  # setting aws profile for our boto3 client
-os.environ["AWS_DEFAULT_REGION"] = REGION  # current DLCs are only in us-east-1 available
+os.environ["AWS_DEFAULT_REGION"] = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
+SAGEMAKER_EXECUTION_ROLE = os.environ.get("SAGEMAKER_EXECUTION_ROLE", "sagemaker_execution_role")
 
-# TODO: Replace with released DLC images
-images = {
-    "pytorch": {
-        "cpu": "558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:cpu-0.0.1",
-        "gpu": "558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:gpu-0.0.1",
-    },
-    "tensorflow": {
-        "cpu": "558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-tensorflow:cpu-0.0.1",
-        "gpu": "558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-tensorflow:gpu-0.0.1",
-    },
-}
+
+def get_framework_ecr_image(registry_id="763104351884", repository_name="huggingface-pytorch-inference", device="cpu"):
+    client = boto3.client("ecr")
+
+    def get_all_ecr_images(registry_id, repository_name, result_key):
+        response = client.list_images(
+            registryId=registry_id,
+            repositoryName=repository_name,
+        )
+        results = response[result_key]
+        while "nextToken" in response:
+            response = client.list_images(
+                registryId=registry_id,
+                nextToken=response["nextToken"],
+                repositoryName=repository_name,
+            )
+            results.extend(response[result_key])
+        return results
+
+    images = get_all_ecr_images(registry_id=registry_id, repository_name=repository_name, result_key="imageIds")
+    image_tags = [image["imageTag"] for image in images]
+    print(image_tags)
+    image_regex = re.compile("\d\.\d\.\d-" + device + "-.{4}$")
+    image = sorted(list(filter(image_regex.match, image_tags)), reverse=True)[0]
+    return image
 
 
 @pytest.mark.parametrize(
@@ -47,19 +59,17 @@ images = {
 )
 @pytest.mark.parametrize(
     "framework",
-    [
-        "pytorch",
-    ],
-)  # "tensorflow"])
+    ["pytorch", "tensorflow"],
+)
 @pytest.mark.parametrize(
     "device",
     [
-        # "gpu",
+        "gpu",
         "cpu",
     ],
 )
 def test_deployment_from_hub(task, device, framework):
-    image_uri = images[framework][device]
+    image_uri = get_framework_ecr_image(repository_name=f"huggingface-{framework}-inference", device=device)
     name = f"hf-test-{framework}-{device}-{task}".replace("_", "-")
     model = task2model[task][framework]
     instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
@@ -76,7 +86,7 @@ def test_deployment_from_hub(task, device, framework):
         image_uri=image_uri,  # A Docker image URI.
         model_data=None,  # The S3 location of a SageMaker model data .tar.gz
         env=env,  # Environment variables to run with image_uri when hosted in SageMaker (default: None).
-        role=ROLE_NAME,  # An AWS IAM role (either name or full ARN).
+        role=SAGEMAKER_EXECUTION_ROLE,  # An AWS IAM role (either name or full ARN).
         name=name,  # The model name
         sagemaker_session=sagemaker_session,
     )
@@ -127,6 +137,7 @@ def test_deployment_from_hub(task, device, framework):
                 "p95_request_time": np.percentile(time_buffer, 95),
                 "body": json.loads(response_body),
             }
+            print(data)
             json.dump(data, outfile)
 
         assert task2performance[task][device]["average_request_time"] >= np.mean(time_buffer)
