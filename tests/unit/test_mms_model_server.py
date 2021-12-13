@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.import os
 import os
-import re
-import pytest
 
+import pytest
 from sagemaker_inference.environment import model_dir
 
 from mock import patch
