@@ -11,9 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import importlib.util
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
 from huggingface_hub import HfApi
@@ -29,7 +31,11 @@ if is_tf_available():
 if is_torch_available():
     import torch
 
-from pathlib import Path
+_aws_neuron_available = importlib.util.find_spec("torch_neuron") is not None
+
+
+def is_aws_neuron_available():
+    return _aws_neuron_available
 
 
 logger = logging.getLogger(__name__)
