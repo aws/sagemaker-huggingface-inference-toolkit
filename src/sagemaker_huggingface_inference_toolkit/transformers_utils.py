@@ -14,6 +14,7 @@
 import json
 import logging
 import os
+import importlib.util
 from typing import Optional
 
 from huggingface_hub import HfApi
@@ -28,6 +29,13 @@ if is_tf_available():
 
 if is_torch_available():
     import torch
+
+_aws_neuron_available = importlib.util.find_spec("torch_neuron") is not None
+
+
+def is_aws_neuron_available():
+    return _aws_neuron_available
+
 
 from pathlib import Path
 

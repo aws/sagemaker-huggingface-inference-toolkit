@@ -37,6 +37,7 @@ from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     HF_API_TOKEN,
     HF_MODEL_REVISION,
     _load_model_from_hub,
+    is_aws_neuron_available,
 )
 
 
@@ -68,6 +69,11 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
             os.environ["SAGEMAKER_HANDLER"] = handler_service
         _set_python_path()
     elif "HF_MODEL_ID" in os.environ:
+        if is_aws_neuron_available():
+            raise ValueError(
+                "Hugging Face Hub deployments are currently not supported with AWS Neuron and Inferentia."
+                "You need to create a `inference.py` script to run your model using AWS Neuron"
+            )
         storage_dir = _load_model_from_hub(
             model_id=os.environ["HF_MODEL_ID"],
             model_dir=DEFAULT_MMS_MODEL_DIRECTORY,
