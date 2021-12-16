@@ -1,0 +1,28 @@
+name: pypi package deployment
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.6
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Install Python dependencies
+        run: pip install -e .[test,dev]
+      - name: Run Unit Tests
+        run: make unit-test
+      - name: Install dependencies
+        run: |
+          pip install setuptools wheel twine
+          python setup.py sdist bdist_wheel
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
