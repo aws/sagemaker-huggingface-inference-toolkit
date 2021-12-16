@@ -30,7 +30,7 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 
 install_requires = [
     "sagemaker-inference>=1.5.5",
@@ -77,9 +77,9 @@ extras["dev"] = extras["transformers"] + extras["mms"] + extras["torch"] + extra
 
 setup(
     name="sagemaker-huggingface-inference-toolkit",
-    version=VERSION
-    if os.getenv("SM_HF_TOOLKIT_RELEASE") is not None
-    else VERSION + "b" + str(date.today()).replace("-", ""),
+    version=VERSION,
+    # if os.getenv("SM_HF_TOOLKIT_RELEASE") is not None
+    # else VERSION + "b" + str(date.today()).replace("-", ""),
     author="HuggingFace and Amazon Web Services",
     description="Open source library for running inference workload with Hugging Face Deep Learning Containers on "
     "Amazon SageMaker.",
