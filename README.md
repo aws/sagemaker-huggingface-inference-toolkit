@@ -115,7 +115,7 @@ The Hugging Face Inference Toolkit allows user to override the default methods o
 For example:  
 ```bash
 model.tar.gz/
-|- pytroch_model.bin
+|- pytorch_model.bin
 |- ....
 |- code/
   |- inference.py
