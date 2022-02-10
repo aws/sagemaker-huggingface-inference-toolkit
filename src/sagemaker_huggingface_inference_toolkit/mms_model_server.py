@@ -17,7 +17,7 @@ import os
 import pathlib
 import subprocess
 
-from sagemaker_inference import logging, environment
+from sagemaker_inference import environment, logging
 from sagemaker_inference.environment import model_dir
 from sagemaker_inference.model_server import (
     DEFAULT_MMS_LOG_FILE,

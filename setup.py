@@ -30,7 +30,7 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 
 install_requires = [
     "sagemaker-inference>=1.5.11",
