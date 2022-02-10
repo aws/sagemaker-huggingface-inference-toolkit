@@ -17,7 +17,7 @@ import os
 import pathlib
 import subprocess
 
-from sagemaker_inference import logging
+from sagemaker_inference import logging, environment
 from sagemaker_inference.environment import model_dir
 from sagemaker_inference.model_server import (
     DEFAULT_MMS_LOG_FILE,
@@ -28,7 +28,7 @@ from sagemaker_inference.model_server import (
     _add_sigterm_handler,
     _create_model_server_config_file,
     _install_requirements,
-    _retrieve_mms_server_process,
+    _retry_retrieve_mms_server_process,
     _set_python_path,
 )
 
@@ -84,7 +84,8 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
     else:
         _adapt_to_mms_format(handler_service, model_dir)
 
-    _create_model_server_config_file()
+    env = environment.Environment()
+    _create_model_server_config_file(env)
 
     if os.path.exists(REQUIREMENTS_PATH):
         _install_requirements()
@@ -102,7 +103,9 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
 
     logger.info(multi_model_server_cmd)
     subprocess.Popen(multi_model_server_cmd)
-    mms_process = _retrieve_mms_server_process()
+    # retry for configured timeout
+    mms_process = _retry_retrieve_mms_server_process(env.startup_timeout)
+
     _add_sigterm_handler(mms_process)
     _add_sigchild_handler()
 

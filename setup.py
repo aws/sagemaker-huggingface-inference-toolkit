@@ -33,7 +33,7 @@ from setuptools import find_packages, setup
 VERSION = "1.3.0"
 
 install_requires = [
-    "sagemaker-inference>=1.5.5",
+    "sagemaker-inference>=1.5.11",
     "huggingface_hub>=0.0.8",
     "retrying",
     "numpy",

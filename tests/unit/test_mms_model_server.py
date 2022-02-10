@@ -26,13 +26,15 @@ DEFAULT_CONFIGURATION = "default_configuration"
 
 @patch("subprocess.call")
 @patch("subprocess.Popen")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retrieve_mms_server_process")
+@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retry_retrieve_mms_server_process")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._add_sigterm_handler")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._install_requirements")
 @patch("os.path.exists", return_value=True)
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._create_model_server_config_file")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._adapt_to_mms_format")
+@patch("sagemaker_inference.environment.Environment")
 def test_start_mms_default_service_handler(
+    env,
     adapt,
     create_config,
     exists,
@@ -42,10 +44,11 @@ def test_start_mms_default_service_handler(
     subprocess_popen,
     subprocess_call,
 ):
+    env.return_value.startup_timeout = 10000
     mms_model_server.start_model_server()
 
     adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, model_dir)
-    create_config.assert_called_once_with()
+    create_config.assert_called_once_with(env.return_value)
     exists.assert_called_once_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -67,7 +70,7 @@ def test_start_mms_default_service_handler(
 @patch("sagemaker_huggingface_inference_toolkit.transformers_utils._aws_neuron_available", return_value=True)
 @patch("subprocess.call")
 @patch("subprocess.Popen")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retrieve_mms_server_process")
+@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retry_retrieve_mms_server_process")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._load_model_from_hub")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._add_sigterm_handler")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._install_requirements")
@@ -76,7 +79,9 @@ def test_start_mms_default_service_handler(
 @patch("os.path.exists", return_value=True)
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._create_model_server_config_file")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._adapt_to_mms_format")
+@patch("sagemaker_inference.environment.Environment")
 def test_start_mms_neuron(
+    env,
     adapt,
     create_config,
     exists,
@@ -90,11 +95,11 @@ def test_start_mms_neuron(
     subprocess_call,
     is_aws_neuron_available,
 ):
-
+    env.return_value.startup_timeout = 10000
     mms_model_server.start_model_server()
 
     adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, model_dir)
-    create_config.assert_called_once_with()
+    create_config.assert_called_once_with(env.return_value)
     exists.assert_called_once_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -115,7 +120,7 @@ def test_start_mms_neuron(
 
 @patch("subprocess.call")
 @patch("subprocess.Popen")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retrieve_mms_server_process")
+@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retry_retrieve_mms_server_process")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._load_model_from_hub")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._add_sigterm_handler")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._install_requirements")
@@ -124,7 +129,9 @@ def test_start_mms_neuron(
 @patch("os.path.exists", return_value=True)
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._create_model_server_config_file")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._adapt_to_mms_format")
+@patch("sagemaker_inference.environment.Environment")
 def test_start_mms_with_model_from_hub(
+    env,
     adapt,
     create_config,
     exists,
@@ -137,6 +144,8 @@ def test_start_mms_with_model_from_hub(
     subprocess_popen,
     subprocess_call,
 ):
+    env.return_value.startup_timeout = 10000
+
     os.environ["HF_MODEL_ID"] = "lysandre/tiny-bert-random"
 
     mms_model_server.start_model_server()
@@ -149,7 +158,7 @@ def test_start_mms_with_model_from_hub(
     )
 
     adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, load_model_from_hub())
-    create_config.assert_called_once_with()
+    create_config.assert_called_once_with(env.return_value)
     exists.assert_called_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -172,7 +181,7 @@ def test_start_mms_with_model_from_hub(
 @patch("sagemaker_huggingface_inference_toolkit.transformers_utils._aws_neuron_available", return_value=True)
 @patch("subprocess.call")
 @patch("subprocess.Popen")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retrieve_mms_server_process")
+@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retry_retrieve_mms_server_process")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._load_model_from_hub")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._add_sigterm_handler")
 @patch("sagemaker_huggingface_inference_toolkit.mms_model_server._install_requirements")
