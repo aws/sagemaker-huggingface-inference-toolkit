@@ -149,3 +149,13 @@ requests to us.
 ## 📜  License
 
 SageMaker Hugging Face Inference Toolkit is licensed under the Apache 2.0 License.
+
+---
+
+## 🧑🏻‍💻 Development Environment
+
+Install all test and development packages with 
+
+```bash
+pip3 install -e ".[test,dev]"
+```
