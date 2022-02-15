@@ -14,7 +14,7 @@
 import csv
 import datetime
 import json
-from io import StringIO
+from io import BytesIO, StringIO
 
 import numpy as np
 from sagemaker_inference import errors
@@ -22,6 +22,7 @@ from sagemaker_inference.decoder import _npy_to_numpy
 from sagemaker_inference.encoder import _array_to_npy
 
 from mms.service import PredictionException
+from PIL import Image
 from sagemaker_huggingface_inference_toolkit import content_types
 
 
@@ -59,8 +60,11 @@ def decode_image(bpayload: bytearray):
     Returns:
         (dict): dictonatry for input
     """
-
-    return {"inputs": bytes(bpayload)}
+    print(bpayload)
+    print(type(bpayload))
+    # bytes(bpayload)
+    image = Image.open(BytesIO(bpayload)).convert("RGB")
+    return {"inputs": image}
 
 
 # https://github.com/automl/SMAC3/issues/453
@@ -129,7 +133,8 @@ _decoder_map = {
     content_types.PNG: decode_image,
     content_types.TIFF: decode_image,
     content_types.BMP: decode_image,
-    content_types.HEIC: decode_image,
+    content_types.GIF: decode_image,
+    content_types.WEBP: decode_image,
 }
 
 

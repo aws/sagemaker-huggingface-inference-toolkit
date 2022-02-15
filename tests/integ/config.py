@@ -1,13 +1,13 @@
 import os
 
 from integ.utils import (
+    validate_classification,
     validate_feature_extraction,
     validate_fill_mask,
     validate_ner,
     validate_question_answering,
     validate_summarization,
     validate_text2text_generation,
-    validate_classification,
     validate_text_generation,
     validate_translation,
     validate_zero_shot_classification,

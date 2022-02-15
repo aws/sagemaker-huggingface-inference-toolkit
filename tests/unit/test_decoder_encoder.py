@@ -17,6 +17,7 @@ import os
 import pytest
 
 from mms.service import PredictionException
+from PIL import Image
 from sagemaker_huggingface_inference_toolkit import decoder_encoder
 
 
@@ -57,7 +58,8 @@ def test_decode_image():
         image_bytes = open(os.path.join(image_files_path, image_file), "rb").read()
         decoded_data = decoder_encoder.decode_image(bytearray(image_bytes))
 
-        assert {"inputs": image_bytes} == decoded_data
+        assert isinstance(decoded_data, dict)
+        assert isinstance(decoded_data["inputs"], Image.Image)
 
 
 def test_decode_csv_without_header():

@@ -255,8 +255,20 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         raise EnvironmentError(
             "The task for this model is not set: Please set one: https://huggingface.co/docs#how-is-a-models-type-of-inference-api-and-widget-determined"
         )
+    # define tokenizer or feature extractor as kwargs to load it the pipeline correctly
+    if task in {
+        "automatic-speech-recognition",
+        "image-segmentation",
+        "image-classification",
+        "audio-classification",
+        "object-detection",
+    }:
+        kwargs["feature_extractor"] = model_dir
+    else:
+        kwargs["tokenizer"] = model_dir
 
-    hf_pipeline = pipeline(task=task, model=model_dir, tokenizer=model_dir, device=device, **kwargs)
+    # load pipeline
+    hf_pipeline = pipeline(task=task, model=model_dir, device=device, **kwargs)
 
     # wrapp specific pipeline to support better ux
     if task == "conversational":
