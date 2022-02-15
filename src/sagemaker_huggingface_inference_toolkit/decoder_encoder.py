@@ -60,9 +60,6 @@ def decode_image(bpayload: bytearray):
     Returns:
         (dict): dictonatry for input
     """
-    print(bpayload)
-    print(type(bpayload))
-    # bytes(bpayload)
     image = Image.open(BytesIO(bpayload)).convert("RGB")
     return {"inputs": image}
 

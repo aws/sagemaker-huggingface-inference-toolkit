@@ -38,7 +38,7 @@ install_requires = [
     "retrying",
     "numpy",
     # vision
-    "Pillow"
+    "Pillow",
 ]
 
 extras = {}
@@ -75,7 +75,7 @@ extras["quality"] = [
     "flake8>=3.8.3",
 ]
 
-extras["dev"] = extras["transformers"] + extras["vision"] + extras["mms"] + extras["torch"] + extras["tensorflow"]
+extras["dev"] = extras["transformers"] + extras["mms"] + extras["torch"] + extras["tensorflow"]
 
 setup(
     name="sagemaker-huggingface-inference-toolkit",

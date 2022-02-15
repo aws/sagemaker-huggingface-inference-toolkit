@@ -19,11 +19,11 @@ import sys
 import time
 from abc import ABC
 
-from sagemaker_inference import content_types, environment, utils
+from sagemaker_inference import environment, utils
 from transformers.pipelines import SUPPORTED_TASKS
 
 from mms.service import PredictionException
-from sagemaker_huggingface_inference_toolkit import decoder_encoder
+from sagemaker_huggingface_inference_toolkit import decoder_encoder, content_types
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     _is_gpu_available,
     get_pipeline,
@@ -228,7 +228,7 @@ class HuggingFaceHandlerService(ABC):
                 accept = content_types.JSON
 
             if content_type in content_types.UTF8_TYPES:
-                input_data = input_data.decode("utf-8")
+                input_data = input_data.decode("utf-8")               
 
             predict_start = time.time()
             response = self.transform_fn(self.model, input_data, content_type, accept)

@@ -73,7 +73,8 @@ def test_deployment_from_hub(task, device, framework):
     image_uri = get_framework_ecr_image(repository_name=f"huggingface-{framework}-inference", device=device)
     name = f"hf-test-{framework}-{device}-{task}".replace("_", "-")
     model = task2model[task][framework]
-    instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
+    # instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
+    instance_type = "local" if device == "cpu" else "local_gpu"
     number_of_requests = 100
     if model is None:
         return
