@@ -1,3 +1,5 @@
+import os
+
 from integ.utils import (
     validate_feature_extraction,
     validate_fill_mask,
@@ -5,7 +7,7 @@ from integ.utils import (
     validate_question_answering,
     validate_summarization,
     validate_text2text_generation,
-    validate_text_classification,
+    validate_classification,
     validate_text_generation,
     validate_translation,
     validate_zero_shot_classification,
@@ -53,6 +55,10 @@ task2model = {
         "pytorch": "gpt2",
         "tensorflow": "gpt2",
     },
+    "image-classification": {
+        "pytorch": "google/vit-base-patch16-224",
+        "tensorflow": "google/vit-base-patch16-224",
+    },
 }
 
 task2input = {
@@ -78,6 +84,7 @@ task2input = {
         "inputs": "question: What is 42 context: 42 is the answer to life, the universe and everything."
     },
     "text-generation": {"inputs": "My name is philipp and I am"},
+    "image-classification": open(os.path.join(os.getcwd(), "tests/resources/image/tiger.jpeg"), "rb").read(),
 }
 
 task2output = {
@@ -98,6 +105,13 @@ task2output = {
     "feature-extraction": None,
     "fill-mask": None,
     "text-generation": None,
+    "image-classification": [
+        {"score": 0.8858247399330139, "label": "tiger, Panthera tigris"},
+        {"score": 0.10940514504909515, "label": "tiger cat"},
+        {"score": 0.0006216464680619538, "label": "jaguar, panther, Panthera onca, Felis onca"},
+        {"score": 0.0004262699221726507, "label": "dhole, Cuon alpinus"},
+        {"score": 0.00030842673731967807, "label": "lion, king of beasts, Panthera leo"},
+    ],
 }
 
 task2performance = {
@@ -181,10 +195,18 @@ task2performance = {
             "average_request_time": 3,
         },
     },
+    "image-classification": {
+        "cpu": {
+            "average_request_time": 4,
+        },
+        "gpu": {
+            "average_request_time": 1,
+        },
+    },
 }
 
 task2validation = {
-    "text-classification": validate_text_classification,
+    "text-classification": validate_classification,
     "zero-shot-classification": validate_zero_shot_classification,
     "feature-extraction": validate_feature_extraction,
     "ner": validate_ner,
@@ -194,4 +216,5 @@ task2validation = {
     "translation_xx_to_yy": validate_translation,
     "text2text-generation": validate_text2text_generation,
     "text-generation": validate_text_generation,
+    "image-classification": validate_classification,
 }

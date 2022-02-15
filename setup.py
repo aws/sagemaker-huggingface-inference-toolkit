@@ -43,6 +43,7 @@ extras = {}
 
 # Hugging Face specific dependencies
 extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.5.1"]
+extras["vision"] = ["Pillow"]
 
 # framework specific dependencies
 extras["torch"] = ["torch>=1.8.0"]

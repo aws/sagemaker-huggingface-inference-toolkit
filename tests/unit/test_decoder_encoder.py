@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+import os
 
 import pytest
 
@@ -47,6 +48,16 @@ def test_decode_csv():
     text_classification_input = "inputs\r\nI love you\r\nI like you"
     decoded_data = decoder_encoder.decode_csv(text_classification_input)
     assert decoded_data == {"inputs": ["I love you", "I like you"]}
+
+
+def test_decode_image():
+    image_files_path = os.path.join(os.getcwd(), "tests/resources/image")
+
+    for image_file in os.listdir(image_files_path):
+        image_bytes = open(os.path.join(image_files_path, image_file), "rb").read()
+        decoded_data = decoder_encoder.decode_image(bytearray(image_bytes))
+
+        assert {"inputs": image_bytes} == decoded_data
 
 
 def test_decode_csv_without_header():

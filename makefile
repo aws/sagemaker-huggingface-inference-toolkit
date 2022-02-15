@@ -25,3 +25,17 @@ style:
 	# black --line-length 119 --target-version py36 tests src benchmarks datasets metrics
 	black --line-length 119 --target-version py36 $(check_dirs)
 	isort $(check_dirs)
+
+
+run:
+	docker run -t -i \
+	--env HF_TASK="automatic-speech-recognition" \
+	--env HF_MODEL_ID="facebook/wav2vec2-base-100h" \
+	-p 8080:8080  558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.8.1-cpu
+
+build:
+	docker build --tag 558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.8.1-cpu \
+							 --build-arg TRANSFORMERS_VERSION=4.9.2 \
+							 --file ./docker/Dockerfile.cpu \
+							 .
+start:	build run

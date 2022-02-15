@@ -4,6 +4,11 @@
 </div>
 
 
+ImageSegmentationPipeline
+ObjectDetectionPipeline
+ImageClassificationPipeline
+
+
 # SageMaker Hugging Face Inference Toolkit 
 
 [![Latest Version](https://img.shields.io/pypi/v/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Supported Python Versions](https://img.shields.io/pypi/pyversions/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Code Style: Black](https://img.shields.io/badge/code_style-black-000000.svg)](https://github.com/python/black)

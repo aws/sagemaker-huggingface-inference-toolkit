@@ -45,16 +45,17 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
 @pytest.mark.parametrize(
     "task",
     [
-        "text-classification",
-        "zero-shot-classification",
-        "ner",
-        "question-answering",
-        "fill-mask",
-        "summarization",
-        "translation_xx_to_yy",
-        "text2text-generation",
-        "text-generation",
-        "feature-extraction",
+        # "text-classification",
+        # "zero-shot-classification",
+        # "ner",
+        # "question-answering",
+        # "fill-mask",
+        # "summarization",
+        # "translation_xx_to_yy",
+        # "text2text-generation",
+        # "text-generation",
+        # "feature-extraction",
+        "image-classification",
     ],
 )
 @pytest.mark.parametrize(
@@ -103,12 +104,20 @@ def test_deployment_from_hub(task, device, framework):
         time_buffer = []
 
         # Warm up the model
-        response = client.invoke_endpoint(
-            EndpointName=name,
-            Body=json.dumps(task2input[task]),
-            ContentType="application/json",
-            Accept="application/json",
-        )
+        if task == "image-classification":
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=task2input[task],
+                ContentType="image/jpeg",
+                Accept="application/json",
+            )
+        else:
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=json.dumps(task2input[task]),
+                ContentType="application/json",
+                Accept="application/json",
+            )
 
         # validate response
         response_body = response["Body"].read().decode("utf-8")
@@ -117,12 +126,20 @@ def test_deployment_from_hub(task, device, framework):
 
         for _ in range(number_of_requests):
             with track_infer_time(time_buffer):
-                response = client.invoke_endpoint(
-                    EndpointName=name,
-                    Body=json.dumps(task2input[task]),
-                    ContentType="application/json",
-                    Accept="application/json",
-                )
+                if task == "image-classification":
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=task2input[task],
+                        ContentType="image/jpeg",
+                        Accept="application/json",
+                    )
+                else:
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=json.dumps(task2input[task]),
+                        ContentType="application/json",
+                        Accept="application/json",
+                    )
         with open(f"{name}.json", "w") as outfile:
             data = {
                 "index": name,
@@ -130,7 +147,6 @@ def test_deployment_from_hub(task, device, framework):
                 "device": device,
                 "model": model,
                 "number_of_requests": number_of_requests,
-                "number_of_input_token": count_tokens(task2input[task]["inputs"], task),
                 "average_request_time": np.mean(time_buffer),
                 "max_request_time": max(time_buffer),
                 "min_request_time": min(time_buffer),

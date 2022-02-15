@@ -17,11 +17,12 @@ import json
 from io import StringIO
 
 import numpy as np
-from sagemaker_inference import content_types, errors
-from sagemaker_inference.decoder import _npy_to_numpy, _npz_to_sparse
+from sagemaker_inference import errors
+from sagemaker_inference.decoder import _npy_to_numpy
 from sagemaker_inference.encoder import _array_to_npy
 
 from mms.service import PredictionException
+from sagemaker_huggingface_inference_toolkit import content_types
 
 
 def decode_json(content):
@@ -49,6 +50,17 @@ def decode_csv(string_like):  # type: (str) -> np.array
         return {"inputs": [entry["inputs"] for entry in request_list]}
     else:
         return {"inputs": request_list}
+
+
+def decode_image(bpayload: bytearray):
+    """Convert a .jpeg / .png / .tiff... object to a proper inputs dict.
+    Args:
+        bpayload (bytes): byte stream.
+    Returns:
+        (dict): dictonatry for input
+    """
+
+    return {"inputs": bytes(bpayload)}
 
 
 # https://github.com/automl/SMAC3/issues/453
@@ -111,8 +123,13 @@ _encoder_map = {
 _decoder_map = {
     content_types.NPY: _npy_to_numpy,
     content_types.CSV: decode_csv,
-    content_types.NPZ: _npz_to_sparse,
     content_types.JSON: decode_json,
+    # image mime-types
+    content_types.JPEG: decode_image,
+    content_types.PNG: decode_image,
+    content_types.TIFF: decode_image,
+    content_types.BMP: decode_image,
+    content_types.HEIC: decode_image,
 }
 
 
