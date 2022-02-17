@@ -65,7 +65,7 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
 @pytest.mark.parametrize(
     "device",
     [
-        "gpu",
+        # "gpu",
         "cpu",
     ],
 )
