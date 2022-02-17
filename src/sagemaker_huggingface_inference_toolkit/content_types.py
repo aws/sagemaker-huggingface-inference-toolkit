@@ -26,4 +26,5 @@ TIFF = "image/tiff"
 BMP = "image/bmp"
 GIF = "image/gif"
 WEBP = "image/webp"
-VISION_TYPES = [JPEG, PNG, TIFF, BMP, GIF, WEBP]
+X_IMAGE = "image/x-image"
+VISION_TYPES = [JPEG, PNG, TIFF, BMP, GIF, WEBP,X_IMAGE]
