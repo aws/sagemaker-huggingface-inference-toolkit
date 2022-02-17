@@ -143,6 +143,7 @@ _decoder_map = {
     content_types.BMP: decode_image,
     content_types.GIF: decode_image,
     content_types.WEBP: decode_image,
+    content_types.X_IMAGE: decode_image,
     # audio mime-types
     content_types.FLAC: decode_audio,
     content_types.MP3: decode_audio,
