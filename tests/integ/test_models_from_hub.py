@@ -112,6 +112,13 @@ def test_deployment_from_hub(task, device, framework):
                 ContentType="image/jpeg",
                 Accept="application/json",
             )
+        elif task == "automatic-speech-recognition":
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=task2input[task],
+                ContentType="audio/x-flac",
+                Accept="application/json",
+            )
         else:
             response = client.invoke_endpoint(
                 EndpointName=name,
@@ -132,6 +139,13 @@ def test_deployment_from_hub(task, device, framework):
                         EndpointName=name,
                         Body=task2input[task],
                         ContentType="image/jpeg",
+                        Accept="application/json",
+                    )
+                elif task == "automatic-speech-recognition":
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=task2input[task],
+                        ContentType="audio/x-flac",
                         Accept="application/json",
                     )
                 else:

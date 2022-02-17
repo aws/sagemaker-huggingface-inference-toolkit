@@ -4,7 +4,7 @@
 </div>
 
 
-* [x] ImageSegmentationPipeline
+* [X] ImageSegmentationPipeline
 * [ ] ObjectDetectionPipeline we need `timm` installed
 * [ ] ImageClassificationPipeline we need `timm` installed
 * [ ] AutomaticSpeechRecognitionPipeline 

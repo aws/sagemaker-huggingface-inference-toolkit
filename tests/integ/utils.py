@@ -145,3 +145,9 @@ def validate_feature_extraction(result=None, snapshot=None):
 def validate_fill_mask(result=None, snapshot=None):
     assert result is not None
     return True
+
+
+def validate_automatic_speech_recognition(result=None, snapshot=None):
+    assert result is not None
+    assert "text" in result
+    return True

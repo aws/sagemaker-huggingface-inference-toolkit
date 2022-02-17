@@ -64,6 +64,17 @@ def decode_image(bpayload: bytearray):
     return {"inputs": image}
 
 
+def decode_audio(bpayload: bytearray):
+    """Convert a .wav / .flac / .mp3 object to a proper inputs dict.
+    Args:
+        bpayload (bytes): byte stream.
+    Returns:
+        (dict): dictonatry for input
+    """
+
+    return {"inputs": bytes(bpayload)}
+
+
 # https://github.com/automl/SMAC3/issues/453
 class _JSONEncoder(json.JSONEncoder):
     """
@@ -132,6 +143,12 @@ _decoder_map = {
     content_types.BMP: decode_image,
     content_types.GIF: decode_image,
     content_types.WEBP: decode_image,
+    # audio mime-types
+    content_types.FLAC: decode_audio,
+    content_types.MP3: decode_audio,
+    content_types.WAV: decode_audio,
+    content_types.OGG: decode_audio,
+    content_types.X_AUDIO: decode_audio,
 }
 
 

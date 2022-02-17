@@ -1,6 +1,7 @@
 import os
 
 from integ.utils import (
+    validate_automatic_speech_recognition,
     validate_classification,
     validate_feature_extraction,
     validate_fill_mask,
@@ -59,6 +60,10 @@ task2model = {
         "pytorch": "google/vit-base-patch16-224",
         "tensorflow": "google/vit-base-patch16-224",
     },
+    "automatic-speech-recognition": {
+        "pytorch": "facebook/wav2vec2-base-100h",
+        "tensorflow": "facebook/wav2vec2-base-960h",
+    },
 }
 
 task2input = {
@@ -85,6 +90,7 @@ task2input = {
     },
     "text-generation": {"inputs": "My name is philipp and I am"},
     "image-classification": open(os.path.join(os.getcwd(), "tests/resources/image/tiger.jpeg"), "rb").read(),
+    "automatic-speech-recognition": open(os.path.join(os.getcwd(), "tests/resources/audio/sample1.flac"), "rb").read(),
 }
 
 task2output = {
@@ -112,6 +118,9 @@ task2output = {
         {"score": 0.0004262699221726507, "label": "dhole, Cuon alpinus"},
         {"score": 0.00030842673731967807, "label": "lion, king of beasts, Panthera leo"},
     ],
+    "automatic-speech-recognition": {
+        "text": "GOING ALONG SLUSHY COUNTRY ROADS AND SPEAKING TO DAMP OAUDIENCES IN DROFTY SCHOOL ROOMS DAY AFTER DAY FOR A FORT NIGHT HE'LL HAVE TO PUT IN AN APPEARANCE AT SOME PLACE OF WORSHIP ON SUNDAY MORNING AND HE CAN COME TO US IMMEDIATELY AFTERWARDS"
+    },
 }
 
 task2performance = {
@@ -203,6 +212,14 @@ task2performance = {
             "average_request_time": 1,
         },
     },
+    "automatic-speech-recognition": {
+        "cpu": {
+            "average_request_time": 6,
+        },
+        "gpu": {
+            "average_request_time": 6,
+        },
+    },
 }
 
 task2validation = {
@@ -217,4 +234,5 @@ task2validation = {
     "text2text-generation": validate_text2text_generation,
     "text-generation": validate_text_generation,
     "image-classification": validate_classification,
+    "automatic-speech-recognition": validate_automatic_speech_recognition,
 }
