@@ -62,6 +62,16 @@ def test_decode_image():
         assert isinstance(decoded_data["inputs"], Image.Image)
 
 
+def test_decode_audio():
+    audio_files_path = os.path.join(os.getcwd(), "tests/resources/audio")
+
+    for audio_file in os.listdir(audio_files_path):
+        audio_bytes = open(os.path.join(audio_files_path, audio_file), "rb").read()
+        decoded_data = decoder_encoder.decode_audio(bytearray(audio_bytes))
+
+        assert {"inputs": audio_bytes} == decoded_data
+
+
 def test_decode_csv_without_header():
     with pytest.raises(PredictionException):
         decoder_encoder.decode_csv(

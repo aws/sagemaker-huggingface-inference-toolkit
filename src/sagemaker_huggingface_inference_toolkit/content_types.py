@@ -28,3 +28,10 @@ GIF = "image/gif"
 WEBP = "image/webp"
 X_IMAGE = "image/x-image"
 VISION_TYPES = [JPEG, PNG, TIFF, BMP, GIF, WEBP,X_IMAGE]
+# Speech Mime-Types
+FLAC = "audio/x-flac"
+MP3 = "audio/mpeg"
+WAV = "audio/wave"
+OGG = "audio/ogg"
+X_AUDIO = "audio/x-audio"
+AUDIO_TYPES = [FLAC, MP3, WAV, OGG, X_AUDIO]
