@@ -29,13 +29,19 @@ style:
 
 run:
 	docker run -t -i \
-	--env HF_TASK="automatic-speech-recognition" \
-	--env HF_MODEL_ID="facebook/wav2vec2-base-100h" \
-	-p 8080:8080  558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.8.1-cpu
+	--env HF_TASK="image-classification" \
+	--env HF_MODEL_ID="google/vit-base-patch16-224" \
+	-p 8080:8080  558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.10.2-cpu
+
+	# docker run -t -i \
+	# --env HF_TASK="automatic-speech-recognition" \
+	# --env HF_MODEL_ID="facebook/wav2vec2-base-100h" \
+	# -p 8080:8080  558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.10.2-cpu
+
 
 build:
-	docker build --tag 558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.8.1-cpu \
-							 --build-arg TRANSFORMERS_VERSION=4.9.2 \
-							 --file ./docker/Dockerfile.cpu \
+	docker build --tag 558105141721.dkr.ecr.us-east-1.amazonaws.com/huggingface-inference-pytorch:1.10.2-cpu \
+							 --build-arg TRANSFORMERS_VERSION=4.16.2 \
+							 --file ./Dockerfile.cpu \
 							 .
 start:	build run
