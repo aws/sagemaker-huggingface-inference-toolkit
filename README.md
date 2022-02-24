@@ -4,11 +4,11 @@
 </div>
 
 
-* [X] ImageSegmentationPipeline
-* [ ] ObjectDetectionPipeline we need `timm` installed
-* [ ] ImageClassificationPipeline we need `timm` installed
-* [ ] AutomaticSpeechRecognitionPipeline 
-* [ ] AudioClassificationPipeline 
+* [x] ImageClassificationPipeline
+* [x] AutomaticSpeechRecognitionPipeline 
+* [x] AudioClassificationPipeline 
+* [x] ImageSegmentationPipeline
+* [ ] ObjectDetectionPipeline 
 
 
 # SageMaker Hugging Face Inference Toolkit 
