@@ -15,6 +15,7 @@ import csv
 import datetime
 import json
 from io import BytesIO, StringIO
+import base64
 
 import numpy as np
 from sagemaker_inference import errors
@@ -90,6 +91,11 @@ class _JSONEncoder(json.JSONEncoder):
             return obj.tolist()
         elif isinstance(obj, datetime.datetime):
             return obj.__str__()
+        elif isinstance(obj, Image.Image):
+            with BytesIO() as out:
+                obj.save(out, format="PNG")
+                png_string = out.getvalue()
+                return base64.b64encode(png_string).decode("utf-8")
         else:
             return super(_JSONEncoder, self).default(obj)
 
