@@ -30,7 +30,7 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "1.3.1"
+VERSION = "2.0.0"
 
 
 # Ubuntu packages
@@ -54,7 +54,7 @@ install_requires = [
 extras = {}
 
 # Hugging Face specific dependencies
-extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.5.1"]
+extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.17.0"]
 
 # framework specific dependencies
 extras["torch"] = ["torch>=1.8.0", "torchaudio"]
