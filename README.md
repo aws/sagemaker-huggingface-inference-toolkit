@@ -4,11 +4,6 @@
 </div>
 
 
-* [x] ImageClassificationPipeline
-* [x] AutomaticSpeechRecognitionPipeline 
-* [x] AudioClassificationPipeline 
-* [x] ImageSegmentationPipeline
-* [ ] ObjectDetectionPipeline 
 
 
 # SageMaker Hugging Face Inference Toolkit 
@@ -118,7 +113,7 @@ HF_API_TOKEN="api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 ## 🧑🏻‍💻 User defined code/modules
 
-The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefor the need to create a named `code/` with a `inference.py` file in it. 
+The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefor the need to create a named `code/` with a `inference.py` file in it. You can find an example for it in [sagemaker/17_customer_inference_script](https://github.com/huggingface/notebooks/blob/master/sagemaker/17_custom_inference_script/sagemaker-notebook.ipynb)
 For example:  
 ```bash
 model.tar.gz/
