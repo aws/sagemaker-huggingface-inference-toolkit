@@ -7,7 +7,7 @@ import pytest
 
 import boto3
 from integ.config import task2input, task2model, task2output, task2performance, task2validation
-from integ.utils import clean_up, count_tokens, timeout_and_delete_by_name, track_infer_time
+from integ.utils import clean_up, timeout_and_delete_by_name, track_infer_time
 from sagemaker import Session
 from sagemaker.model import Model
 
