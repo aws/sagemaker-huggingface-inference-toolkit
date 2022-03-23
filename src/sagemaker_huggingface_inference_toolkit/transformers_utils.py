@@ -262,6 +262,7 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         "image-classification",
         "audio-classification",
         "object-detection",
+        "zero-shot-image-classification",
     }:
         kwargs["feature_extractor"] = model_dir
     else:

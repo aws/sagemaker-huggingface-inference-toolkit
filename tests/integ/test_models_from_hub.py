@@ -45,17 +45,18 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
 @pytest.mark.parametrize(
     "task",
     [
-        # "text-classification",
-        # "zero-shot-classification",
-        # "ner",
-        # "question-answering",
-        # "fill-mask",
-        # "summarization",
-        # "translation_xx_to_yy",
-        # "text2text-generation",
-        # "text-generation",
-        # "feature-extraction",
+        "text-classification",
+        "zero-shot-classification",
+        "ner",
+        "question-answering",
+        "fill-mask",
+        "summarization",
+        "translation_xx_to_yy",
+        "text2text-generation",
+        "text-generation",
+        "feature-extraction",
         "image-classification",
+        "automatic-speech-recognition",
     ],
 )
 @pytest.mark.parametrize(
@@ -65,7 +66,7 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
 @pytest.mark.parametrize(
     "device",
     [
-        # "gpu",
+        "gpu",
         "cpu",
     ],
 )

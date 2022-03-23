@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
 import csv
 import datetime
 import json
 from io import BytesIO, StringIO
-import base64
 
 import numpy as np
 from sagemaker_inference import errors
