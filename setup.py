@@ -30,22 +30,34 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "1.3.1"
+VERSION = "2.0.0"
+
+
+# Ubuntu packages
+# libsndfile1-dev: torchaudio requires the development version of the libsndfile package which can be installed via a system package manager. On Ubuntu it can be installed as follows: apt install libsndfile1-dev
+# ffmpeg: ffmpeg is required for audio processing. On Ubuntu it can be installed as follows: apt install ffmpeg
+# libavcodec-extra : libavcodec-extra  inculdes additional codecs for ffmpeg
 
 install_requires = [
     "sagemaker-inference>=1.5.11",
     "huggingface_hub>=0.0.8",
     "retrying",
     "numpy",
+    # vision
+    "Pillow",
+    # speech + torchaudio
+    "librosa",
+    "pyctcdecode>=0.3.0",
+    "phonemizer",
 ]
 
 extras = {}
 
 # Hugging Face specific dependencies
-extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.5.1"]
+extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.17.0"]
 
 # framework specific dependencies
-extras["torch"] = ["torch>=1.8.0"]
+extras["torch"] = ["torch>=1.8.0", "torchaudio"]
 extras["tensorflow"] = ["tensorflow>=2.4.0"]
 
 # MMS Server dependencies

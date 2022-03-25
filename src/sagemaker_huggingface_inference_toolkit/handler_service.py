@@ -19,11 +19,11 @@ import sys
 import time
 from abc import ABC
 
-from sagemaker_inference import content_types, environment, utils
+from sagemaker_inference import environment, utils
 from transformers.pipelines import SUPPORTED_TASKS
 
 from mms.service import PredictionException
-from sagemaker_huggingface_inference_toolkit import decoder_encoder
+from sagemaker_huggingface_inference_toolkit import content_types, decoder_encoder
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     _is_gpu_available,
     get_pipeline,

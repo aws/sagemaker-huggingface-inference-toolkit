@@ -7,7 +7,7 @@ import pytest
 
 import boto3
 from integ.config import task2input, task2model, task2output, task2performance, task2validation
-from integ.utils import clean_up, count_tokens, timeout_and_delete_by_name, track_infer_time
+from integ.utils import clean_up, timeout_and_delete_by_name, track_infer_time
 from sagemaker import Session
 from sagemaker.model import Model
 
@@ -55,6 +55,8 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
         "text2text-generation",
         "text-generation",
         "feature-extraction",
+        "image-classification",
+        "automatic-speech-recognition",
     ],
 )
 @pytest.mark.parametrize(
@@ -72,7 +74,8 @@ def test_deployment_from_hub(task, device, framework):
     image_uri = get_framework_ecr_image(repository_name=f"huggingface-{framework}-inference", device=device)
     name = f"hf-test-{framework}-{device}-{task}".replace("_", "-")
     model = task2model[task][framework]
-    instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
+    # instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
+    instance_type = "local" if device == "cpu" else "local_gpu"
     number_of_requests = 100
     if model is None:
         return
@@ -103,12 +106,27 @@ def test_deployment_from_hub(task, device, framework):
         time_buffer = []
 
         # Warm up the model
-        response = client.invoke_endpoint(
-            EndpointName=name,
-            Body=json.dumps(task2input[task]),
-            ContentType="application/json",
-            Accept="application/json",
-        )
+        if task == "image-classification":
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=task2input[task],
+                ContentType="image/jpeg",
+                Accept="application/json",
+            )
+        elif task == "automatic-speech-recognition":
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=task2input[task],
+                ContentType="audio/x-flac",
+                Accept="application/json",
+            )
+        else:
+            response = client.invoke_endpoint(
+                EndpointName=name,
+                Body=json.dumps(task2input[task]),
+                ContentType="application/json",
+                Accept="application/json",
+            )
 
         # validate response
         response_body = response["Body"].read().decode("utf-8")
@@ -117,12 +135,27 @@ def test_deployment_from_hub(task, device, framework):
 
         for _ in range(number_of_requests):
             with track_infer_time(time_buffer):
-                response = client.invoke_endpoint(
-                    EndpointName=name,
-                    Body=json.dumps(task2input[task]),
-                    ContentType="application/json",
-                    Accept="application/json",
-                )
+                if task == "image-classification":
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=task2input[task],
+                        ContentType="image/jpeg",
+                        Accept="application/json",
+                    )
+                elif task == "automatic-speech-recognition":
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=task2input[task],
+                        ContentType="audio/x-flac",
+                        Accept="application/json",
+                    )
+                else:
+                    response = client.invoke_endpoint(
+                        EndpointName=name,
+                        Body=json.dumps(task2input[task]),
+                        ContentType="application/json",
+                        Accept="application/json",
+                    )
         with open(f"{name}.json", "w") as outfile:
             data = {
                 "index": name,
@@ -130,7 +163,6 @@ def test_deployment_from_hub(task, device, framework):
                 "device": device,
                 "model": model,
                 "number_of_requests": number_of_requests,
-                "number_of_input_token": count_tokens(task2input[task]["inputs"], task),
                 "average_request_time": np.mean(time_buffer),
                 "max_request_time": max(time_buffer),
                 "min_request_time": min(time_buffer),

@@ -85,7 +85,7 @@ def count_tokens(inputs: dict, task: str) -> int:
         return len(_re_word_boundaries.findall(inputs)) >> 1
 
 
-def validate_text_classification(result=None, snapshot=None):
+def validate_classification(result=None, snapshot=None):
     for idx, _ in enumerate(result):
         assert result[idx].keys() == snapshot[idx].keys()
         assert result[idx]["score"] >= snapshot[idx]["score"]
@@ -144,4 +144,10 @@ def validate_feature_extraction(result=None, snapshot=None):
 
 def validate_fill_mask(result=None, snapshot=None):
     assert result is not None
+    return True
+
+
+def validate_automatic_speech_recognition(result=None, snapshot=None):
+    assert result is not None
+    assert "text" in result
     return True

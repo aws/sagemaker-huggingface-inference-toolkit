@@ -11,17 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import base64
 import csv
 import datetime
 import json
-from io import StringIO
+from io import BytesIO, StringIO
 
 import numpy as np
-from sagemaker_inference import content_types, errors
-from sagemaker_inference.decoder import _npy_to_numpy, _npz_to_sparse
+from sagemaker_inference import errors
+from sagemaker_inference.decoder import _npy_to_numpy
 from sagemaker_inference.encoder import _array_to_npy
 
 from mms.service import PredictionException
+from PIL import Image
+from sagemaker_huggingface_inference_toolkit import content_types
 
 
 def decode_json(content):
@@ -51,6 +54,28 @@ def decode_csv(string_like):  # type: (str) -> np.array
         return {"inputs": request_list}
 
 
+def decode_image(bpayload: bytearray):
+    """Convert a .jpeg / .png / .tiff... object to a proper inputs dict.
+    Args:
+        bpayload (bytes): byte stream.
+    Returns:
+        (dict): dictonatry for input
+    """
+    image = Image.open(BytesIO(bpayload)).convert("RGB")
+    return {"inputs": image}
+
+
+def decode_audio(bpayload: bytearray):
+    """Convert a .wav / .flac / .mp3 object to a proper inputs dict.
+    Args:
+        bpayload (bytes): byte stream.
+    Returns:
+        (dict): dictonatry for input
+    """
+
+    return {"inputs": bytes(bpayload)}
+
+
 # https://github.com/automl/SMAC3/issues/453
 class _JSONEncoder(json.JSONEncoder):
     """
@@ -66,6 +91,11 @@ class _JSONEncoder(json.JSONEncoder):
             return obj.tolist()
         elif isinstance(obj, datetime.datetime):
             return obj.__str__()
+        elif isinstance(obj, Image.Image):
+            with BytesIO() as out:
+                obj.save(out, format="PNG")
+                png_string = out.getvalue()
+                return base64.b64encode(png_string).decode("utf-8")
         else:
             return super(_JSONEncoder, self).default(obj)
 
@@ -111,8 +141,21 @@ _encoder_map = {
 _decoder_map = {
     content_types.NPY: _npy_to_numpy,
     content_types.CSV: decode_csv,
-    content_types.NPZ: _npz_to_sparse,
     content_types.JSON: decode_json,
+    # image mime-types
+    content_types.JPEG: decode_image,
+    content_types.PNG: decode_image,
+    content_types.TIFF: decode_image,
+    content_types.BMP: decode_image,
+    content_types.GIF: decode_image,
+    content_types.WEBP: decode_image,
+    content_types.X_IMAGE: decode_image,
+    # audio mime-types
+    content_types.FLAC: decode_audio,
+    content_types.MP3: decode_audio,
+    content_types.WAV: decode_audio,
+    content_types.OGG: decode_audio,
+    content_types.X_AUDIO: decode_audio,
 }
 
 

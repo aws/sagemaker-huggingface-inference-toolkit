@@ -4,6 +4,8 @@
 </div>
 
 
+
+
 # SageMaker Hugging Face Inference Toolkit 
 
 [![Latest Version](https://img.shields.io/pypi/v/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Supported Python Versions](https://img.shields.io/pypi/pyversions/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Code Style: Black](https://img.shields.io/badge/code_style-black-000000.svg)](https://github.com/python/black)
@@ -111,7 +113,7 @@ HF_API_TOKEN="api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 ## 🧑🏻‍💻 User defined code/modules
 
-The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefor the need to create a named `code/` with a `inference.py` file in it. 
+The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefor the need to create a named `code/` with a `inference.py` file in it. You can find an example for it in [sagemaker/17_customer_inference_script](https://github.com/huggingface/notebooks/blob/master/sagemaker/17_custom_inference_script/sagemaker-notebook.ipynb)
 For example:  
 ```bash
 model.tar.gz/
@@ -144,3 +146,13 @@ requests to us.
 ## 📜  License
 
 SageMaker Hugging Face Inference Toolkit is licensed under the Apache 2.0 License.
+
+---
+
+## 🧑🏻‍💻 Development Environment
+
+Install all test and development packages with 
+
+```bash
+pip3 install -e ".[test,dev]"
+```
