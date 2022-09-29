@@ -113,7 +113,7 @@ HF_API_TOKEN="api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 ## 🧑🏻‍💻 User defined code/modules
 
-The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefor the need to create a named `code/` with a `inference.py` file in it. You can find an example for it in [sagemaker/17_customer_inference_script](https://github.com/huggingface/notebooks/blob/master/sagemaker/17_custom_inference_script/sagemaker-notebook.ipynb)
+The Hugging Face Inference Toolkit allows user to override the default methods of the `HuggingFaceHandlerService`. Therefore, they need to create a folder named `code/` with an `inference.py` file in it. You can find an example for it in [sagemaker/17_customer_inference_script](https://github.com/huggingface/notebooks/blob/master/sagemaker/17_custom_inference_script/sagemaker-notebook.ipynb).
 For example:  
 ```bash
 model.tar.gz/
@@ -123,12 +123,12 @@ model.tar.gz/
   |- inference.py
   |- requirements.txt 
 ```
-In this example, `pytroch_model.bin` is the model file saved from training, `inference.py` is the custom inference module, and `requirements.txt` is a requirements file to add additional dependencies.
+In this example, `pytorch_model.bin` is the model file saved from training, `inference.py` is the custom inference module, and `requirements.txt` is a requirements file to add additional dependencies.
 The custom module can override the following methods:  
 
 * `model_fn(model_dir)`: overrides the default method for loading the model, the return value `model` will be used in the `predict()` for predicitions. It receives argument the `model_dir`, the path to your unzipped `model.tar.gz`.
-* `transform_fn(model, data, content_type, accept_type)`: Overrides the default transform function with custom implementation. Customers using this would have to implement `preprocess`, `predict` and `postprocess` steps in the `transform_fn`. **NOTE: This method can't be combined with `input_fn`, `predict_fn` or `output_fn` mentioned below.** 
-* `input_fn(input_data, content_type)`: overrides the default method for prerprocessing, the return value `data` will be used in the `predict()` method for predicitions. The input is `input_data`, the raw body of your request and `content_type`, the content type form the request Header.
+* `transform_fn(model, data, content_type, accept_type)`: overrides the default transform function with a custom implementation. Customers using this would have to implement `preprocess`, `predict` and `postprocess` steps in the `transform_fn`. **NOTE: This method can't be combined with `input_fn`, `predict_fn` or `output_fn` mentioned below.** 
+* `input_fn(input_data, content_type)`: overrides the default method for preprocessing, the return value `data` will be used in the `predict()` method for predicitions. The input is `input_data`, the raw body of your request and `content_type`, the content type form the request Header.
 * `predict_fn(processed_data, model)`: overrides the default method for predictions, the return value `predictions` will be used in the `postprocess()` method. The input is `processed_data`, the result of the `preprocess()` method.
 * `output_fn(prediction, accept)`: overrides the default method for postprocessing, the return value `result` will be the respond of your request(e.g.`JSON`). The inputs are `predictions`, the result of the `predict()` method and `accept` the return accept type from the HTTP Request, e.g. `application/json`
 
