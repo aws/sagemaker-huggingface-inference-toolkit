@@ -80,7 +80,7 @@ extras["test"] = [
 extras["benchmark"] = ["boto3", "locust"]
 
 extras["quality"] = [
-    "black==21.4b0",
+    "black>=21.10",
     "isort>=5.5.4",
     "flake8>=3.8.3",
 ]
