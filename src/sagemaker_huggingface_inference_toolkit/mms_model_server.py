@@ -18,9 +18,9 @@ import pathlib
 import subprocess
 
 from sagemaker_inference import environment, logging
-from sagemaker_inference.environment import model_dir
 from sagemaker_inference.model_server import (
     DEFAULT_MMS_LOG_FILE,
+    DEFAULT_MMS_MODEL_NAME,
     ENABLE_MULTI_MODEL,
     MMS_CONFIG_FILE,
     REQUIREMENTS_PATH,
@@ -45,8 +45,8 @@ logger = logging.get_logger()
 
 DEFAULT_HANDLER_SERVICE = handler_service.__name__
 
-DEFAULT_MMS_MODEL_DIRECTORY = os.path.join(os.getcwd(), ".sagemaker/mms/models")
-MODEL_STORE = "/" if ENABLE_MULTI_MODEL else DEFAULT_MMS_MODEL_DIRECTORY
+DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY = os.path.join(os.getcwd(), ".sagemaker/mms/models")
+DEFAULT_MODEL_STORE = "/"
 
 
 def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
@@ -64,11 +64,15 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
             Defaults to ``sagemaker_huggingface_inference_toolkit.handler_service``.
 
     """
+    use_hf_hub = "HF_MODEL_ID" in os.environ
+    model_store = DEFAULT_MODEL_STORE
     if ENABLE_MULTI_MODEL:
         if not os.getenv("SAGEMAKER_HANDLER"):
             os.environ["SAGEMAKER_HANDLER"] = handler_service
         _set_python_path()
-    elif "HF_MODEL_ID" in os.environ:
+    elif use_hf_hub:
+        # Use different model store directory
+        model_store = DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY
         if is_aws_neuron_available():
             raise ValueError(
                 "Hugging Face Hub deployments are currently not supported with AWS Neuron and Inferentia."
@@ -76,16 +80,19 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
             )
         storage_dir = _load_model_from_hub(
             model_id=os.environ["HF_MODEL_ID"],
-            model_dir=DEFAULT_MMS_MODEL_DIRECTORY,
+            model_dir=DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
             revision=HF_MODEL_REVISION,
             use_auth_token=HF_API_TOKEN,
         )
         _adapt_to_mms_format(handler_service, storage_dir)
     else:
-        _adapt_to_mms_format(handler_service, model_dir)
+        _set_python_path()
 
     env = environment.Environment()
-    _create_model_server_config_file(env)
+
+    # Note: multi-model default config already sets default_service_handler
+    handler_service_for_config = None if ENABLE_MULTI_MODEL else handler_service
+    _create_model_server_config_file(env, handler_service_for_config)
 
     if os.path.exists(REQUIREMENTS_PATH):
         _install_requirements()
@@ -94,12 +101,14 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
         "multi-model-server",
         "--start",
         "--model-store",
-        MODEL_STORE,
+        model_store,
         "--mms-config",
         MMS_CONFIG_FILE,
         "--log-config",
         DEFAULT_MMS_LOG_FILE,
     ]
+    if not ENABLE_MULTI_MODEL and not use_hf_hub:
+        multi_model_server_cmd += ["--models", DEFAULT_MMS_MODEL_NAME + "=" + environment.model_dir]
 
     logger.info(multi_model_server_cmd)
     subprocess.Popen(multi_model_server_cmd)
@@ -113,7 +122,7 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
 
 
 def _adapt_to_mms_format(handler_service, model_path):
-    os.makedirs(DEFAULT_MMS_MODEL_DIRECTORY, exist_ok=True)
+    os.makedirs(DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY, exist_ok=True)
 
     # gets the model from the path, default is model/
     model = pathlib.PurePath(model_path)
@@ -128,7 +137,7 @@ def _adapt_to_mms_format(handler_service, model_path):
         "--model-path",
         model_path,
         "--export-path",
-        DEFAULT_MMS_MODEL_DIRECTORY,
+        DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
         "--archive-format",
         "no-archive",
         "--f",

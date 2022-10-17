@@ -47,8 +47,10 @@ def test_start_mms_default_service_handler(
     env.return_value.startup_timeout = 10000
     mms_model_server.start_model_server()
 
-    adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, model_dir)
-    create_config.assert_called_once_with(env.return_value)
+    # In this case, we should not rearchive the model
+    adapt.assert_not_called()
+
+    create_config.assert_called_once_with(env.return_value, mms_model_server.DEFAULT_HANDLER_SERVICE)
     exists.assert_called_once_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -56,11 +58,13 @@ def test_start_mms_default_service_handler(
         "multi-model-server",
         "--start",
         "--model-store",
-        mms_model_server.MODEL_STORE,
+        mms_model_server.DEFAULT_MODEL_STORE,
         "--mms-config",
         mms_model_server.MMS_CONFIG_FILE,
         "--log-config",
         mms_model_server.DEFAULT_MMS_LOG_FILE,
+        "--models",
+        "{}={}".format(mms_model_server.DEFAULT_MMS_MODEL_NAME, model_dir),
     ]
 
     subprocess_popen.assert_called_once_with(multi_model_server_cmd)
@@ -98,8 +102,10 @@ def test_start_mms_neuron(
     env.return_value.startup_timeout = 10000
     mms_model_server.start_model_server()
 
-    adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, model_dir)
-    create_config.assert_called_once_with(env.return_value)
+    # In this case, we should not call model archiver
+    adapt.assert_not_called()
+
+    create_config.assert_called_once_with(env.return_value, mms_model_server.DEFAULT_HANDLER_SERVICE)
     exists.assert_called_once_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -107,11 +113,13 @@ def test_start_mms_neuron(
         "multi-model-server",
         "--start",
         "--model-store",
-        mms_model_server.MODEL_STORE,
+        mms_model_server.DEFAULT_MODEL_STORE,
         "--mms-config",
         mms_model_server.MMS_CONFIG_FILE,
         "--log-config",
         mms_model_server.DEFAULT_MMS_LOG_FILE,
+        "--models",
+        "{}={}".format(mms_model_server.DEFAULT_MMS_MODEL_NAME, model_dir),
     ]
 
     subprocess_popen.assert_called_once_with(multi_model_server_cmd)
@@ -152,13 +160,15 @@ def test_start_mms_with_model_from_hub(
 
     load_model_from_hub.assert_called_once_with(
         model_id=os.environ["HF_MODEL_ID"],
-        model_dir=mms_model_server.DEFAULT_MMS_MODEL_DIRECTORY,
+        model_dir=mms_model_server.DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
         revision=transformers_utils.HF_MODEL_REVISION,
         use_auth_token=transformers_utils.HF_API_TOKEN,
     )
 
+    # When loading model from hub, we do call model archiver
     adapt.assert_called_once_with(mms_model_server.DEFAULT_HANDLER_SERVICE, load_model_from_hub())
-    create_config.assert_called_once_with(env.return_value)
+
+    create_config.assert_called_once_with(env.return_value, mms_model_server.DEFAULT_HANDLER_SERVICE)
     exists.assert_called_with(mms_model_server.REQUIREMENTS_PATH)
     install_requirements.assert_called_once_with()
 
@@ -166,7 +176,7 @@ def test_start_mms_with_model_from_hub(
         "multi-model-server",
         "--start",
         "--model-store",
-        mms_model_server.MODEL_STORE,
+        mms_model_server.DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
         "--mms-config",
         mms_model_server.MMS_CONFIG_FILE,
         "--log-config",
@@ -175,7 +185,7 @@ def test_start_mms_with_model_from_hub(
 
     subprocess_popen.assert_called_once_with(multi_model_server_cmd)
     sigterm.assert_called_once_with(retrieve.return_value)
-    os.remove(mms_model_server.DEFAULT_MMS_MODEL_DIRECTORY)
+    os.remove(mms_model_server.DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY)
 
 
 @patch("sagemaker_huggingface_inference_toolkit.transformers_utils._aws_neuron_available", return_value=True)
