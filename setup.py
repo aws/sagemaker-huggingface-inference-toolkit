@@ -39,7 +39,7 @@ VERSION = "2.1.0"
 # libavcodec-extra : libavcodec-extra  inculdes additional codecs for ffmpeg
 
 install_requires = [
-    "sagemaker-inference>=1.5.11",
+    "sagemaker-inference>=1.8.0",
     "huggingface_hub>=0.0.8",
     "retrying",
     "numpy",
