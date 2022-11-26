@@ -58,7 +58,9 @@ extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.17.0"]
 
 # framework specific dependencies
 extras["torch"] = ["torch>=1.8.0", "torchaudio"]
-extras["tensorflow"] = ["tensorflow>=2.4.0"]
+
+# TODO: Remove upper bound of TF 2.11 once transformers release contains this fix: https://github.com/huggingface/evaluate/pull/372
+extras["tensorflow"] = ["tensorflow>=2.4.0,<2.11"]
 
 # MMS Server dependencies
 extras["mms"] = ["multi-model-server>=1.1.4", "retrying"]
