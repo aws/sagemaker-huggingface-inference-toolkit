@@ -211,7 +211,7 @@ def infer_task_from_model_architecture(model_config_path: str, architecture_inde
     trainend on different tasks https://huggingface.co/facebook/bart-large/blob/main/config.json. Should work for every on Amazon SageMaker fine-tuned model.
     It is always recommended to set the task through the env var `TASK`.
     """
-    with open(model_config_path, "r+") as config_file:
+    with open(model_config_path, "r") as config_file:
         config = json.loads(config_file.read())
         architecture = config.get("architectures", [None])[architecture_index]
 
