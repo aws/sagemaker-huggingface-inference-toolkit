@@ -137,7 +137,7 @@ def _adapt_to_mms_format(handler_service, model_path):
         "--model-path",
         model_path,
         "--export-path",
-        DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
+        "/tmp",
         "--archive-format",
         "no-archive",
         "--f",
