@@ -15,6 +15,7 @@ import json
 import os
 
 import pytest
+from transformers.testing_utils import require_torch
 
 from mms.service import PredictionException
 from PIL import Image
@@ -82,6 +83,15 @@ def test_decode_csv_without_header():
 def test_encode_json():
     encoded_data = decoder_encoder.encode_json(ENCODE_JSON_INPUT)
     assert json.loads(encoded_data) == ENCODE_JSON_INPUT
+
+
+@require_torch
+def test_encode_json_torch():
+    import torch
+
+    DATA = [1, 0.5, 5.0]
+    encoded_data = decoder_encoder.encode_json({"data": torch.tensor(DATA)})
+    assert json.loads(encoded_data) == {"data": DATA}
 
 
 def test_encode_csv():
