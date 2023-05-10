@@ -14,6 +14,7 @@
 import json
 import os
 
+import numpy as np
 import pytest
 from transformers.testing_utils import require_torch
 
@@ -27,6 +28,7 @@ ENCODE_CSV_INPUT = [
     {"answer": "Nuremberg", "end": 42, "score": 0.9926825761795044, "start": 33},
     {"answer": "Berlin is the capital of Germany", "end": 32, "score": 0.26097726821899414, "start": 0},
 ]
+ENCODE_TOLOIST_INPUT = [1, 0.5, 5.0]
 
 DECODE_JSON_INPUT = {"inputs": "My name is Wolfgang and I live in Berlin"}
 DECODE_CSV_INPUT = "question,context\r\nwhere do i live?,My name is Philipp and I live in Nuremberg\r\nwhere is Berlin?,Berlin is the capital of Germany"
@@ -89,9 +91,13 @@ def test_encode_json():
 def test_encode_json_torch():
     import torch
 
-    DATA = [1, 0.5, 5.0]
-    encoded_data = decoder_encoder.encode_json({"data": torch.tensor(DATA)})
-    assert json.loads(encoded_data) == {"data": DATA}
+    encoded_data = decoder_encoder.encode_json({"data": torch.tensor(ENCODE_TOLOIST_INPUT)})
+    assert json.loads(encoded_data) == {"data": ENCODE_TOLOIST_INPUT}
+
+
+def test_encode_json_numpy():
+    encoded_data = decoder_encoder.encode_json({"data": np.array(ENCODE_TOLOIST_INPUT)})
+    assert json.loads(encoded_data) == {"data": ENCODE_TOLOIST_INPUT}
 
 
 def test_encode_csv():
