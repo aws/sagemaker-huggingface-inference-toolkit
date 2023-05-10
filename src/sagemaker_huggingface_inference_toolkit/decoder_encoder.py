@@ -87,7 +87,7 @@ class _JSONEncoder(json.JSONEncoder):
             return int(obj)
         elif isinstance(obj, np.floating):
             return float(obj)
-        elif isinstance(obj, np.ndarray):
+        elif hasattr(obj, "tolist"):
             return obj.tolist()
         elif isinstance(obj, datetime.datetime):
             return obj.__str__()
