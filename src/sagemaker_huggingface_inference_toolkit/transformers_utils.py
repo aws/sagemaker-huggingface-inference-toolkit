@@ -38,6 +38,21 @@ def is_aws_neuron_available():
     return _aws_neuron_available
 
 
+def strtobool(val):
+    """Convert a string representation of truth to true (1) or false (0).
+    True values are 'y', 'yes', 't', 'true', 'on', and '1'; false values
+    are 'n', 'no', 'f', 'false', 'off', and '0'.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1"):
+        return 1
+    elif val in ("n", "no", "f", "false", "off", "0"):
+        return 0
+    else:
+        raise ValueError("invalid truth value %r" % (val,))
+
+
 logger = logging.getLogger(__name__)
 
 PYTORCH_WEIGHTS_NAME = "pytorch_model.bin"
@@ -94,6 +109,7 @@ ARCHITECTURES_2_TASK = {
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", None)
 HF_MODEL_REVISION = os.environ.get("HF_MODEL_REVISION", None)
+TRUST_REMOTE_CODE = strtobool(os.environ.get("HF_TRUST_REMOTE_CODE", "False"))
 
 
 def wrap_conversation_pipeline(pipeline):
@@ -269,7 +285,7 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         kwargs["tokenizer"] = model_dir
 
     # load pipeline
-    hf_pipeline = pipeline(task=task, model=model_dir, device=device, **kwargs)
+    hf_pipeline = pipeline(task=task, model=model_dir, device=device, trust_remote_code=TRUST_REMOTE_CODE, **kwargs)
 
     # wrapp specific pipeline to support better ux
     if task == "conversational":

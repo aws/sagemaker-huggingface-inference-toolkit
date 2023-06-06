@@ -109,6 +109,15 @@ The `HF_API_TOKEN` environment variable defines the your Hugging Face authorizat
 HF_API_TOKEN="api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 ```
 
+#### `HF_TRUST_REMOTE_CODE`
+
+The `HF_TRUST_REMOTE_CODE` environment variable defines wether or not to allow for custom models defined on the Hub in their own modeling files. Allowed values are `"True"` and `"False"`
+
+```bash
+HF_TRUST_REMOTE_CODE="True"
+```
+
+
 ---
 
 ## 🧑🏻‍💻 User defined code/modules
