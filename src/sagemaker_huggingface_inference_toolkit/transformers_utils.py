@@ -20,7 +20,7 @@ from typing import Optional
 
 from huggingface_hub import HfApi
 from huggingface_hub.file_download import cached_download, hf_hub_url
-from transformers import pipeline
+from transformers import pipeline, AutoTokenizer
 from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
@@ -284,8 +284,15 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
     else:
         kwargs["tokenizer"] = model_dir
 
-    # load pipeline
-    hf_pipeline = pipeline(task=task, model=model_dir, device=device, trust_remote_code=TRUST_REMOTE_CODE, **kwargs)
+    if TRUST_REMOTE_CODE and os.environ.get("HF_MODEL_ID", None) is not None and device == 0:
+        torch_dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] == 8 else torch.float16
+        tokenizer = AutoTokenizer.from_pretrained(os.environ["HF_MODEL_ID"])
+
+        hf_pipeline = pipeline(task=task, model=os.environ["HF_MODEL_ID"],tokenizer=tokenizer, trust_remote_code=TRUST_REMOTE_CODE, model_kwargs={"device_map":"auto", "torch_dtype":torch_dtype})
+        print(hf_pipeline)
+    else:
+        # load pipeline
+        hf_pipeline = pipeline(task=task, model=model_dir, device=device, trust_remote_code=TRUST_REMOTE_CODE, **kwargs)
 
     # wrapp specific pipeline to support better ux
     if task == "conversational":

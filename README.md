@@ -165,3 +165,11 @@ Install all test and development packages with
 ```bash
 pip3 install -e ".[test,dev]"
 ```
+## Test
+
+manually change `MMS_CONFIG_FILE`
+
+wget -O sagemaker-mms.properties https://raw.githubusercontent.com/aws/deep-learning-containers/master/huggingface/build_artifacts/inference/config.properties
+
+HF_MODEL_ID="tiiuae/falcon-7b" HF_TASK="text-generation" HF_TRUST_REMOTE_CODE="True" python src/sagemaker_huggingface_inference_toolkit/serving.py
+-> Needs PT2.0
