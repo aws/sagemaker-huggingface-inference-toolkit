@@ -24,6 +24,8 @@ from transformers import pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
+from sagemaker_huggingface_inference_toolkit.optimum_utils import is_optimum_neuron_available
+
 
 if is_tf_available():
     import tensorflow as tf
@@ -72,6 +74,9 @@ FILE_LIST_NAMES = [
     "entity_vocab.json",
     "pooling_config.json",
 ]
+
+if is_optimum_neuron_available():
+    FILE_LIST_NAMES.append("model.neuron")
 
 REPO_ID_SEPARATOR = "__"
 
