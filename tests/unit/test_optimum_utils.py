@@ -60,8 +60,8 @@ def test_get_input_shapes_from_file():
 @require_torch
 @require_inferentia
 def test_get_input_shapes_from_env():
-    os.environ["OPTIMUM_NEURON_BATCH_SIZE"] = "4"
-    os.environ["OPTIMUM_NEURON_SEQUENCE_LENGTH"] = "32"
+    os.environ["HF_OPTIMUM_BATCH_SIZE"] = "4"
+    os.environ["HF_OPTIMUM_SEQUENCE_LENGTH"] = "32"
     with tempfile.TemporaryDirectory() as tmpdirname:
         storage_folder = _load_model_from_hub(
             model_id=REMOTE_NOT_CONVERTED_MODEL,

@@ -26,16 +26,6 @@ def is_optimum_neuron_available():
     return _optimum_neuron
 
 
-OPTIMUM_NEURON_TASKS = [
-    "feature-extraction",
-    "fill-mask",
-    "text-classification",
-    "token-classification",
-    "question-answering",
-    "zero-shot-classification",
-]
-
-
 def get_input_shapes(model_dir):
     """Method to get input shapes from model config file. If config file is not present, default values are returned."""
     from transformers import AutoConfig
@@ -60,12 +50,12 @@ def get_input_shapes(model_dir):
         return input_shapes
 
     # extract input shapes from environment variables
-    sequence_length = os.environ.get("OPTIMUM_NEURON_SEQUENCE_LENGTH", None)
+    sequence_length = os.environ.get("HF_OPTIMUM_SEQUENCE_LENGTH", None)
     if not int(sequence_length) > 0:
         raise ValueError(
-            f"OPTIMUM_NEURON_SEQUENCE_LENGTH must be set to a positive integer. Current value is {sequence_length}"
+            f"HF_OPTIMUM_SEQUENCE_LENGTH must be set to a positive integer. Current value is {sequence_length}"
         )
-    batch_size = os.environ.get("OPTIMUM_NEURON_BATCH_SIZE", 1)
+    batch_size = os.environ.get("HF_OPTIMUM_BATCH_SIZE", 1)
     logger.info(
         f"Using input shapes from environment variables with batch size {batch_size} and sequence length {sequence_length}"
     )
@@ -74,13 +64,13 @@ def get_input_shapes(model_dir):
 
 def get_optimum_neuron_pipeline(task, model_dir):
     """Method to get optimum neuron pipeline for a given task. Method checks if task is supported by optimum neuron and if required environment variables are set, in case model is not converted. If all checks pass, optimum neuron pipeline is returned. If checks fail, an error is raised."""
-    from optimum.neuron.pipelines import pipeline
+    from optimum.neuron.pipelines import pipeline, NEURONX_SUPPORTED_TASKS
     from optimum.neuron.utils import NEURON_FILE_NAME
 
     # check task support
-    if task not in OPTIMUM_NEURON_TASKS:
+    if task not in NEURONX_SUPPORTED_TASKS:
         raise ValueError(
-            f"Task {task} is not supported by optimum neuron and inf2. Supported tasks are: {OPTIMUM_NEURON_TASKS}"
+            f"Task {task} is not supported by optimum neuron and inf2. Supported tasks are: {NEURONX_SUPPORTED_TASKS.keys()}"
         )
 
     # check if model is already converted and has support input shapes available
