@@ -17,7 +17,10 @@ import logging
 import os
 
 
-_optimum_neuron = importlib.util.find_spec("optimum.neuron") is not None
+_optimum_neuron = False
+if importlib.util.find_spec("optimum") is not None:
+    if importlib.util.find_spec("optimum.neuron") is not None:
+        _optimum_neuron = True
 
 logger = logging.getLogger(__name__)
 
