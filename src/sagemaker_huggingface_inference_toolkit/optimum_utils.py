@@ -42,7 +42,7 @@ def get_input_shapes(model_dir):
             logger.info(
                 f"Input shapes found in config file. Using input shapes from config with batch size {input_shapes['batch_size']} and sequence length {input_shapes['sequence_length']}"
             )
-    except:
+    except Exception:
         input_shapes_available = False
 
     # return input shapes if available
@@ -64,7 +64,7 @@ def get_input_shapes(model_dir):
 
 def get_optimum_neuron_pipeline(task, model_dir):
     """Method to get optimum neuron pipeline for a given task. Method checks if task is supported by optimum neuron and if required environment variables are set, in case model is not converted. If all checks pass, optimum neuron pipeline is returned. If checks fail, an error is raised."""
-    from optimum.neuron.pipelines import pipeline, NEURONX_SUPPORTED_TASKS
+    from optimum.neuron.pipelines import NEURONX_SUPPORTED_TASKS, pipeline
     from optimum.neuron.utils import NEURON_FILE_NAME
 
     # check task support
@@ -78,9 +78,7 @@ def get_optimum_neuron_pipeline(task, model_dir):
     if NEURON_FILE_NAME in os.listdir(model_dir):
         export = False
     if export:
-        logger.info(
-            f"Model is not converted. Checking if required environment variables are set and converting model."
-        )
+        logger.info("Model is not converted. Checking if required environment variables are set and converting model.")
 
     # get static input shapes to run inference
     input_shapes = get_input_shapes(model_dir)

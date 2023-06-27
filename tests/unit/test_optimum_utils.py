@@ -40,7 +40,7 @@ TASK = "text-classification"
 @require_inferentia
 def test_not_supported_task():
     os.environ["HF_TASK"] = "not-supported-task"
-    with pytest.raises(Exception) as e:
+    with pytest.raises(Exception):
         get_optimum_neuron_pipeline(task=TASK, model_dir=os.getcwd())
 
 
