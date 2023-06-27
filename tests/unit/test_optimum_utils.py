@@ -13,16 +13,17 @@
 # limitations under the License.
 import os
 import tempfile
-import pytest
 
+import pytest
 from transformers.testing_utils import require_torch
 
 from sagemaker_huggingface_inference_toolkit.optimum_utils import (
-    is_optimum_neuron_available,
     get_input_shapes,
     get_optimum_neuron_pipeline,
+    is_optimum_neuron_available,
 )
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub
+
 
 require_inferentia = pytest.mark.skipif(
     not is_optimum_neuron_available(),

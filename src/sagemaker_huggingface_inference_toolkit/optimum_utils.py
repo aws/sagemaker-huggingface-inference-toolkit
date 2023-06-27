@@ -1,7 +1,25 @@
+# Copyright 2023 The HuggingFace Team, Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import importlib.util
+import logging
 import os
 
+
 _optimum_neuron = importlib.util.find_spec("optimum.neuron") is not None
+
+logger = logging.getLogger(__name__)
 
 
 def is_optimum_neuron_available():
@@ -31,6 +49,9 @@ def get_input_shapes(model_dir):
             input_shapes["batch_size"] = config.neuron_batch_size
             input_shapes["sequence_length"] = config.neuron_sequence_length
             input_shapes_available = True
+            logger.info(
+                f"Input shapes found in config file. Using input shapes from config with batch size {input_shapes['batch_size']} and sequence length {input_shapes['sequence_length']}"
+            )
     except:
         input_shapes_available = False
 
@@ -45,7 +66,9 @@ def get_input_shapes(model_dir):
             f"OPTIMUM_NEURON_SEQUENCE_LENGTH must be set to a positive integer. Current value is {sequence_length}"
         )
     batch_size = os.environ.get("OPTIMUM_NEURON_BATCH_SIZE", 1)
-
+    logger.info(
+        f"Using input shapes from environment variables with batch size {batch_size} and sequence length {sequence_length}"
+    )
     return {"batch_size": int(batch_size), "sequence_length": int(sequence_length)}
 
 
@@ -64,6 +87,10 @@ def get_optimum_neuron_pipeline(task, model_dir):
     export = True
     if NEURON_FILE_NAME in os.listdir(model_dir):
         export = False
+    if export:
+        logger.info(
+            f"Model is not converted. Checking if required environment variables are set and converting model."
+        )
 
     # get static input shapes to run inference
     input_shapes = get_input_shapes(model_dir)
