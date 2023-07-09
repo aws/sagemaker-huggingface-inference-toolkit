@@ -215,7 +215,7 @@ def _should_download_file(filename: str, framework: str) -> bool:
     """
     Check if a file is in the global allowlist of files to download, is allowed based on the framework, or is a sharded file.
     """
-    if filename in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]:
+    if filename in FILE_LIST_NAMES + FRAMEWORK_MAPPING[framework]:
         return True
     elif re.match(FRAMEWORK_MAPPING_SHARDED[framework], filename):
         return True
