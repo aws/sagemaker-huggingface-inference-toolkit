@@ -168,3 +168,7 @@ def test_allow_sharded_files():
     assert _should_download_file("pytorch_model-abc-of-def.bin", "pytorch") is False
     assert _should_download_file("tf_model-00001-of-00002.h5", "tensorflow") is True
     assert _should_download_file("tf_model-00002-of-00002.h5", "tensorflow") is True
+    assert _should_download_file("tf_model.h5.index.json", "tensorflow") is True
+    assert _should_download_file("pytorch_model.bin.index.json", "pytorch") is True
+    assert _should_download_file("tf_model.h5.index.json", "pytorch") is False
+    assert _should_download_file("pytorch_model.bin.index.json", "tensorflow") is False
