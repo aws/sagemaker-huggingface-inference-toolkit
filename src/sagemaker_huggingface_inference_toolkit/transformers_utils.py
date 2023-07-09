@@ -15,6 +15,7 @@ import importlib.util
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -41,8 +42,11 @@ def is_aws_neuron_available():
 logger = logging.getLogger(__name__)
 
 PYTORCH_WEIGHTS_NAME = "pytorch_model.bin"
+PYTORCH_WEIGHTS_SHARDED_NAME = "pytorch_model-\d{5}-of-\d{5}.bin"
 TF2_WEIGHTS_NAME = "tf_model.h5"
+TF2_WEIGHTS_SHARDED_NAME = "tf_model-\d{5}-of-\d{5}.h5"
 FRAMEWORK_MAPPING = {"pytorch": PYTORCH_WEIGHTS_NAME, "tensorflow": TF2_WEIGHTS_NAME}
+FRAMEWORK_MAPPING_SHARDED = {"pytorch": PYTORCH_WEIGHTS_SHARDED_NAME, "tensorflow": TF2_WEIGHTS_SHARDED_NAME}
 
 FILE_LIST_NAMES = [
     "config.json",
@@ -190,7 +194,7 @@ def _load_model_from_hub(
     download_file_list = [
         file.rfilename
         for file in model_info.siblings
-        if file.rfilename in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]
+        if _should_download_file(file.rfilename, framework)
     ]
 
     # download files to storage_folder and removes cache
@@ -204,6 +208,16 @@ def _load_model_from_hub(
 
     return storage_folder
 
+def _should_download_file(filename: str, framework: str) -> bool:
+    """
+    Check if a file is in the global allowlist of files to download, is allowed based on the framework, or is a sharded file.
+    """
+    if filename in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]:
+        return True
+    elif re.match(FRAMEWORK_MAPPING_SHARDED[framework], filename):
+        return True
+    else:
+        return False
 
 def infer_task_from_model_architecture(model_config_path: str, architecture_index=0) -> str:
     """

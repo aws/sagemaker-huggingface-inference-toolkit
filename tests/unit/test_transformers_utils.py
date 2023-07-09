@@ -26,6 +26,7 @@ from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     _get_framework,
     _is_gpu_available,
     _load_model_from_hub,
+    _should_download_file,
     get_pipeline,
     infer_task_from_hub,
     infer_task_from_model_architecture,
@@ -158,3 +159,11 @@ def test_wrapped_pipeline():
         res = conv_pipe(data)
         assert "conversation" in res
         assert "generated_text" in res
+
+def test_allow_sharded_files():
+    assert _should_download_file("pytorch_model-00001-of-00002.bin", "pytorch") is True
+    assert _should_download_file("pytorch_model-00002-of-00002.bin", "pytorch") is True
+    assert _should_download_file("pytorch_model-00002-of-00002.bin", "tensorflow") is False
+    assert _should_download_file("pytorch_model-abc-of-def.bin", "pytorch") is False
+    assert _should_download_file("tf_model-00001-of-00002.h5", "tensorflow") is True
+    assert _should_download_file("tf_model-00002-of-00002.h5", "tensorflow") is True
