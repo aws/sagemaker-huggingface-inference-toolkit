@@ -160,6 +160,7 @@ def test_wrapped_pipeline():
         assert "conversation" in res
         assert "generated_text" in res
 
+
 def test_allow_sharded_files():
     assert _should_download_file("pytorch_model-00001-of-00002.bin", "pytorch") is True
     assert _should_download_file("pytorch_model-00002-of-00002.bin", "pytorch") is True

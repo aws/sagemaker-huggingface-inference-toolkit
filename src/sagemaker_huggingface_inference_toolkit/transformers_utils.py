@@ -192,9 +192,7 @@ def _load_model_from_hub(
 
     # filters files to download
     download_file_list = [
-        file.rfilename
-        for file in model_info.siblings
-        if _should_download_file(file.rfilename, framework)
+        file.rfilename for file in model_info.siblings if _should_download_file(file.rfilename, framework)
     ]
 
     # download files to storage_folder and removes cache
@@ -208,6 +206,7 @@ def _load_model_from_hub(
 
     return storage_folder
 
+
 def _should_download_file(filename: str, framework: str) -> bool:
     """
     Check if a file is in the global allowlist of files to download, is allowed based on the framework, or is a sharded file.
@@ -218,6 +217,7 @@ def _should_download_file(filename: str, framework: str) -> bool:
         return True
     else:
         return False
+
 
 def infer_task_from_model_architecture(model_config_path: str, architecture_index=0) -> str:
     """
