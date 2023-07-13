@@ -111,7 +111,7 @@ HF_API_TOKEN="api_XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 #### `HF_OPTIMUM_BATCH_SIZE`
 
-The `HF_OPTIMUM_BATCH_SIZE` environment variable defines the batch szie, which is used when compiling the model to Neuron. The default value is `1`. Not required when model is already converted. 
+The `HF_OPTIMUM_BATCH_SIZE` environment variable defines the batch size, which is used when compiling the model to Neuron. The default value is `1`. Not required when model is already converted. 
 
 ```bash
 HF_OPTIMUM_BATCH_SIZE="1"

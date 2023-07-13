@@ -45,6 +45,14 @@ def get_input_shapes(model_dir):
             logger.info(
                 f"Input shapes found in config file. Using input shapes from config with batch size {input_shapes['batch_size']} and sequence length {input_shapes['sequence_length']}"
             )
+            if os.environ.get("HF_OPTIMUM_BATCH_SIZE", None) is not None:
+                logger.warning(
+                    f"HF_OPTIMUM_BATCH_SIZE environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
+                )
+            if os.environ.get("HF_OPTIMUM_SEQUENCE_LENGTH", None) is not None:
+                logger.warning(
+                    f"HF_OPTIMUM_SEQUENCE_LENGTH environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
+                )
     except Exception:
         input_shapes_available = False
 
@@ -73,10 +81,10 @@ def get_optimum_neuron_pipeline(task, model_dir):
     # check task support
     if task not in NEURONX_SUPPORTED_TASKS:
         raise ValueError(
-            f"Task {task} is not supported by optimum neuron and inf2. Supported tasks are: {NEURONX_SUPPORTED_TASKS.keys()}"
+            f"Task {task} is not supported by optimum neuron and inf2. Supported tasks are: {list(NEURONX_SUPPORTED_TASKS.keys())}"
         )
 
-    # check if model is already converted and has support input shapes available
+    # check if model is already converted and has input shapes available
     export = True
     if NEURON_FILE_NAME in os.listdir(model_dir):
         export = False
