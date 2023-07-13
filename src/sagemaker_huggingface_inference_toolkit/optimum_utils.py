@@ -47,11 +47,11 @@ def get_input_shapes(model_dir):
             )
             if os.environ.get("HF_OPTIMUM_BATCH_SIZE", None) is not None:
                 logger.warning(
-                    f"HF_OPTIMUM_BATCH_SIZE environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
+                    "HF_OPTIMUM_BATCH_SIZE environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
                 )
             if os.environ.get("HF_OPTIMUM_SEQUENCE_LENGTH", None) is not None:
                 logger.warning(
-                    f"HF_OPTIMUM_SEQUENCE_LENGTH environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
+                    "HF_OPTIMUM_SEQUENCE_LENGTH environment variable is set. Environment variable will be ignored and input shapes from config file will be used."
                 )
     except Exception:
         input_shapes_available = False
