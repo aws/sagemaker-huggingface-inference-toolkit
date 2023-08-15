@@ -30,7 +30,7 @@ from setuptools import find_packages, setup
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
 
-VERSION = "2.2.0"
+VERSION = "2.3.0.dev0"
 
 
 # Ubuntu packages
