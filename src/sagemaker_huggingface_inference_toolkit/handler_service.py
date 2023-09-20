@@ -76,6 +76,7 @@ class HuggingFaceHandlerService(ABC):
         self.device = self.get_device()
         self.model = self.load(self.model_dir)
         self.initialized = True
+
         # # Load methods from file
         # if (not self._initialized) and ENABLE_MULTI_MODEL:
         #     code_dir = os.path.join(context.system_properties.get("model_dir"), "code")
