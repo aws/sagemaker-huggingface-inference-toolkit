@@ -19,9 +19,6 @@ from transformers.file_utils import is_torch_available
 from transformers.testing_utils import require_tf, require_torch, slow
 
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (
-    FILE_LIST_NAMES,
-    PYTORCH_WEIGHTS_NAME,
-    TF2_WEIGHTS_NAME,
     _build_storage_path,
     _get_framework,
     _is_gpu_available,
@@ -51,9 +48,7 @@ def test_loading_model_from_hub():
 
         # folder contains all config files and pytorch_model.bin
         folder_contents = os.listdir(storage_folder)
-        assert any([True for files in FILE_LIST_NAMES if files in folder_contents])
-        assert PYTORCH_WEIGHTS_NAME in folder_contents
-        assert TF2_WEIGHTS_NAME not in folder_contents
+        assert "config.json" in folder_contents
 
 
 @require_torch
@@ -64,9 +59,19 @@ def test_loading_model_from_hub_with_revision():
         # folder contains all config files and pytorch_model.bin
         assert REVISION in storage_folder
         folder_contents = os.listdir(storage_folder)
-        assert any([True for files in FILE_LIST_NAMES if files in folder_contents])
-        assert PYTORCH_WEIGHTS_NAME in folder_contents
+        assert "config.json" in folder_contents
         assert "tokenizer_config.json" not in folder_contents
+
+
+@require_torch
+def test_loading_model_safetensor_from_hub_with_revision():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        storage_folder = _load_model_from_hub(
+            model_id="hf-internal-testing/tiny-random-bert-safetensors", model_dir=tmpdirname
+        )
+
+        folder_contents = os.listdir(storage_folder)
+        assert "model.safetensors" in folder_contents
 
 
 def test_gpu_is_not_available():
