@@ -20,7 +20,6 @@ from io import BytesIO, StringIO
 import numpy as np
 from sagemaker_inference import errors
 from sagemaker_inference.decoder import _npy_to_numpy
-from sagemaker_inference.encoder import _array_to_npy
 
 from mms.service import PredictionException
 from PIL import Image
@@ -100,7 +99,7 @@ class _JSONEncoder(json.JSONEncoder):
             return super(_JSONEncoder, self).default(obj)
 
 
-def encode_json(content):
+def encode_json(content, accept_type):
     """
     encodes json with custom `JSONEncoder`
     """
@@ -114,7 +113,25 @@ def encode_json(content):
     )
 
 
-def encode_csv(content):  # type: (str) -> np.array
+def _array_to_npy(array_like, accept_type):
+    """Convert an array-like object to the NPY format.
+
+    To understand better what an array-like object is see:
+    https://docs.scipy.org/doc/numpy/user/basics.creation.html#converting-python-array-like-objects-to-numpy-arrays
+
+    Args:
+        array_like (np.array or Iterable or int or float): array-like object
+            to be converted to NPY.
+
+    Returns:
+        (obj): NPY array.
+    """
+    buffer = BytesIO()
+    np.save(buffer, array_like)
+    return buffer.getvalue()
+
+
+def encode_csv(content, accept_type):
     """Convert the result of a transformers pipeline to CSV.
     Args:
         content (dict | list): result of transformers pipeline.
@@ -133,10 +150,32 @@ def encode_csv(content):  # type: (str) -> np.array
     return stream.getvalue()
 
 
+def encode_image(image, accept_type=content_types.PNG):
+    """Convert a PIL.Image object to a byte stream.
+    Args:
+        image (PIL.Image): image to be converted.
+        accept_type (str): content type of the image.
+    Returns:
+        (bytes): byte stream of the image.
+    """
+    accept_type = "PNG" if content_types.X_IMAGE == accept_type else accept_type.split("/")[-1].upper()
+
+    with BytesIO() as out:
+        image.save(out, format=accept_type)
+        return out.getvalue()
+
+
 _encoder_map = {
     content_types.NPY: _array_to_npy,
     content_types.CSV: encode_csv,
     content_types.JSON: encode_json,
+    content_types.JPEG: encode_image,
+    content_types.PNG: encode_image,
+    content_types.TIFF: encode_image,
+    content_types.BMP: encode_image,
+    content_types.GIF: encode_image,
+    content_types.WEBP: encode_image,
+    content_types.X_IMAGE: encode_image,
 }
 _decoder_map = {
     content_types.NPY: _npy_to_numpy,
@@ -172,12 +211,12 @@ def decode(content, content_type=content_types.JSON):
         raise pred_err
 
 
-def encode(content, content_type=content_types.JSON):
+def encode(content, accept_type=content_types.JSON):
     """
     Encode an 🤗 Transformers object in a specific content_type.
     """
     try:
-        encoder = _encoder_map[content_type]
-        return encoder(content)
+        encoder = _encoder_map[accept_type]
+        return encoder(content, accept_type)
     except KeyError:
-        raise errors.UnsupportedFormatError(content_type)
+        raise errors.UnsupportedFormatError(accept_type)

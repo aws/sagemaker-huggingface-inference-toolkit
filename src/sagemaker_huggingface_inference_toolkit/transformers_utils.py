@@ -23,6 +23,8 @@ from transformers import pipeline, AutoTokenizer
 from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
+from sagemaker_huggingface_inference_toolkit.diffusers_utils import get_diffusers_pipeline, is_diffusers_available
+
 
 if is_tf_available():
     import tensorflow as tf
@@ -292,6 +294,8 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
             model_kwargs={"device_map": "auto", "torch_dtype": torch_dtype},
         )
         print(hf_pipeline)
+    elif is_diffusers_available() and task == "text-to-image":
+        hf_pipeline = get_diffusers_pipeline(task=task, model_dir=model_dir, device=device, **kwargs)
     else:
         # load pipeline
         hf_pipeline = pipeline(

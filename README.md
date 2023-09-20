@@ -11,7 +11,7 @@
 [![Latest Version](https://img.shields.io/pypi/v/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Supported Python Versions](https://img.shields.io/pypi/pyversions/sagemaker_huggingface_inference_toolkit.svg)](https://pypi.python.org/pypi/sagemaker_huggingface_inference_toolkit) [![Code Style: Black](https://img.shields.io/badge/code_style-black-000000.svg)](https://github.com/python/black)
 
 
-SageMaker Hugging Face Inference Toolkit is an open-source library for serving 🤗 Transformers models on Amazon SageMaker. This library provides default pre-processing, predict and postprocessing for certain 🤗 Transformers models and tasks. It utilizes the [SageMaker Inference Toolkit](https://github.com/aws/sagemaker-inference-toolkit) for starting up the model server, which is responsible for handling inference requests.
+SageMaker Hugging Face Inference Toolkit is an open-source library for serving 🤗 Transformers and Diffusers models on Amazon SageMaker. This library provides default pre-processing, predict and postprocessing for certain 🤗 Transformers and Diffusers models and tasks. It utilizes the [SageMaker Inference Toolkit](https://github.com/aws/sagemaker-inference-toolkit) for starting up the model server, which is responsible for handling inference requests.
 
 For Training, see [Run training on Amazon SageMaker](https://huggingface.co/docs/sagemaker/train).
 
@@ -165,11 +165,25 @@ Install all test and development packages with
 ```bash
 pip3 install -e ".[test,dev]"
 ```
-## Test
+## Run Model Locally
 
-manually change `MMS_CONFIG_FILE`
-
+1. manually change `MMS_CONFIG_FILE`
+```
 wget -O sagemaker-mms.properties https://raw.githubusercontent.com/aws/deep-learning-containers/master/huggingface/build_artifacts/inference/config.properties
+```
 
-HF_MODEL_ID="tiiuae/falcon-7b" HF_TASK="text-generation" HF_TRUST_REMOTE_CODE="True" python src/sagemaker_huggingface_inference_toolkit/serving.py
--> Needs PT2.0
+2. Run Container, e.g. `text-to-image`
+```
+HF_MODEL_ID="stabilityai/stable-diffusion-xl-base-1.0" HF_TASK="text-to-image" python src/sagemaker_huggingface_inference_toolkit/serving.py
+```
+3. Adjust `handler_service.py` and comment out `if content_type in content_types.UTF8_TYPES:` thats needed for SageMaker but cannot be used locally
+
+3. Send request 
+```
+curl --request POST \
+  --url http://localhost:8080/invocations \
+  --header 'Accept: image/png' \
+  --header 'Content-Type: application/json' \
+  --data '"{\"inputs\": \"Camera\"}" \
+  --output image.png
+```
