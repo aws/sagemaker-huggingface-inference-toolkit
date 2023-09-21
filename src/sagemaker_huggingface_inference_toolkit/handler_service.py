@@ -29,7 +29,7 @@ from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     get_pipeline,
     infer_task_from_model_architecture,
 )
-
+from inspect import signature
 
 ENABLE_MULTI_MODEL = os.getenv("SAGEMAKER_MULTI_MODEL", "false") == "true"
 PYTHON_PATH_ENV = "PYTHONPATH"
@@ -74,7 +74,7 @@ class HuggingFaceHandlerService(ABC):
         self.validate_and_initialize_user_module()
 
         self.device = self.get_device()
-        self.model = self.load(self.model_dir)
+        self.model = self.run_handler_function(self.load, *(self.model_dir,))
         self.initialized = True
         # # Load methods from file
         # if (not self._initialized) and ENABLE_MULTI_MODEL:
@@ -92,7 +92,7 @@ class HuggingFaceHandlerService(ABC):
         else:
             return -1
 
-    def load(self, model_dir):
+    def load(self, model_dir, context = None):
         """
         The Load handler is responsible for loading the Hugging Face transformer model.
         It can be overridden to load the model from storage
@@ -111,7 +111,7 @@ class HuggingFaceHandlerService(ABC):
             )
         return hf_pipeline
 
-    def preprocess(self, input_data, content_type):
+    def preprocess(self, input_data, content_type, context = None):
         """
         The preprocess handler is responsible for deserializing the input data into
         an object for prediction, can handle JSON.
@@ -136,7 +136,7 @@ class HuggingFaceHandlerService(ABC):
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
-    def predict(self, data, model):
+    def predict(self, data, model, context = None):
         """The predict handler is responsible for model predictions. Calls the `__call__` method of the provided `Pipeline`
         on decoded_input_data deserialized in input_fn. Runs prediction on GPU if is available.
         The predict handler can be overridden to implement the model inference.
@@ -158,7 +158,7 @@ class HuggingFaceHandlerService(ABC):
             prediction = model(inputs)
         return prediction
 
-    def postprocess(self, prediction, accept):
+    def postprocess(self, prediction, accept, context = None):
         """
         The postprocess handler is responsible for serializing the prediction result to
         the desired accept type, can handle JSON.
@@ -170,7 +170,7 @@ class HuggingFaceHandlerService(ABC):
         """
         return decoder_encoder.encode(prediction, accept)
 
-    def transform_fn(self, model, input_data, content_type, accept):
+    def transform_fn(self, model, input_data, content_type, accept, context = None):
         """
         Transform function ("transform_fn") can be used to write one function with pre/post-processing steps and predict step in it.
         This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn"
@@ -185,11 +185,11 @@ class HuggingFaceHandlerService(ABC):
         """
         # run pipeline
         start_time = time.time()
-        processed_data = self.preprocess(input_data, content_type)
+        processed_data = self.run_handler_function(self.preprocess, *(input_data, content_type))
         preprocess_time = time.time() - start_time
-        predictions = self.predict(processed_data, model)
+        predictions = self.run_handler_function(self.predict, *(processed_data, model))
         predict_time = time.time() - preprocess_time - start_time
-        response = self.postprocess(predictions, accept)
+        response = self.run_handler_function(self.postprocess, *(predictions, accept))
         postprocess_time = time.time() - predict_time - preprocess_time - start_time
 
         logger.info(
@@ -231,7 +231,7 @@ class HuggingFaceHandlerService(ABC):
                 input_data = input_data.decode("utf-8")
 
             predict_start = time.time()
-            response = self.transform_fn(self.model, input_data, content_type, accept)
+            response = self.run_handler_function(self.transform_fn, *(self.model, input_data, content_type, accept))
             predict_end = time.time()
 
             context.metrics.add_time("Transform Fn", round((predict_end - predict_start) * 1000, 2))
@@ -272,3 +272,24 @@ class HuggingFaceHandlerService(ABC):
                 self.postprocess = postprocess_fn
             if transform_fn is not None:
                 self.transform_fn = transform_fn
+    
+    def run_handler_function(self, func, *argv):
+        """Helper to call the handler function which covers 2 cases:
+        1. the handle function takes context
+        2. the handle function does not take context
+        """
+        num_func_input = len(signature(func).parameters)
+        if num_func_input == len(argv):
+            # function does not take context
+            result = func(*argv)
+        elif num_func_input == len(argv) + 1:
+            # function takes context
+            argv_context = argv + (self.context,)
+            result = func(*argv_context)
+        else:
+            raise TypeError(
+                "{} takes {} arguments but {} were given.".format(
+                    func.__name__, num_func_input, len(argv)
+                )
+            )
+        return result

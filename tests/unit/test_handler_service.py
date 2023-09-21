@@ -18,6 +18,7 @@ import tempfile
 import pytest
 from sagemaker_inference import content_types
 from transformers.testing_utils import require_torch, slow
+from mock import Mock
 
 from mms.context import Context, RequestProcessor
 from mms.metrics.metrics_store import MetricsStore
@@ -84,47 +85,52 @@ def test_handle(inference_handler):
 
 @require_torch
 def test_load(inference_handler):
+    context = Mock()
     with tempfile.TemporaryDirectory() as tmpdirname:
         storage_folder = _load_model_from_hub(
             model_id=MODEL,
             model_dir=tmpdirname,
         )
         # test with automatic infer
-        hf_pipeline_without_task = inference_handler.load(storage_folder)
+        hf_pipeline_without_task = inference_handler.load(storage_folder, context)
         assert hf_pipeline_without_task.task == "token-classification"
 
         # test with automatic infer
         os.environ["HF_TASK"] = TASK
-        hf_pipeline_with_task = inference_handler.load(storage_folder)
+        hf_pipeline_with_task = inference_handler.load(storage_folder, context)
         assert hf_pipeline_with_task.task == TASK
 
 
 def test_preprocess(inference_handler):
+    context = Mock()
     json_data = json.dumps(INPUT)
-    decoded_input_data = inference_handler.preprocess(json_data, content_types.JSON)
+    decoded_input_data = inference_handler.preprocess(json_data, content_types.JSON, context)
     assert "inputs" in decoded_input_data
 
 
 def test_preprocess_bad_content_type(inference_handler):
+    context = Mock()
     with pytest.raises(json.decoder.JSONDecodeError):
-        inference_handler.preprocess(b"", content_types.JSON)
+        inference_handler.preprocess(b"", content_types.JSON, context)
 
 
 @require_torch
 def test_predict(inference_handler):
+    context = Mock()
     with tempfile.TemporaryDirectory() as tmpdirname:
         storage_folder = _load_model_from_hub(
             model_id=MODEL,
             model_dir=tmpdirname,
         )
         inference_handler.model = get_pipeline(task=TASK, device=-1, model_dir=storage_folder)
-        prediction = inference_handler.predict(INPUT, inference_handler.model)
+        prediction = inference_handler.predict(INPUT, inference_handler.model, context)
         assert "label" in prediction[0]
         assert "score" in prediction[0]
 
 
 def test_postprocess(inference_handler):
-    output = inference_handler.postprocess(OUTPUT, content_types.JSON)
+    context = Mock()
+    output = inference_handler.postprocess(OUTPUT, content_types.JSON, context)
     assert isinstance(output, str)
 
 
@@ -139,10 +145,11 @@ def test_validate_and_initialize_user_module(inference_handler):
     prediction = inference_handler.handle([{"body": b""}], CONTEXT)
     assert "output" in prediction[0]
 
-    assert inference_handler.load({}) == "model"
-    assert inference_handler.preprocess({}, "") == "data"
-    assert inference_handler.predict({}, "model") == "output"
-    assert inference_handler.postprocess("output", "") == "output"
+    context = Mock()
+    assert inference_handler.load({}, context) == "model"
+    assert inference_handler.preprocess({}, "", context) == "data"
+    assert inference_handler.predict({}, "model", context) == "output"
+    assert inference_handler.postprocess("output", "", context) == "output"
 
 
 def test_validate_and_initialize_user_module_transform_fn():
@@ -155,5 +162,6 @@ def test_validate_and_initialize_user_module_transform_fn():
     CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
     CONTEXT.metrics = MetricsStore(1, MODEL)
     assert "output" in inference_handler.handle([{"body": b"dummy"}], CONTEXT)[0]
-    assert inference_handler.load({}) == "Loading inference_tranform_fn.py"
-    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json") == "output dummy"
+    context = Mock()
+    assert inference_handler.load({}, context) == "Loading inference_tranform_fn.py"
+    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json", context) == "output dummy"
