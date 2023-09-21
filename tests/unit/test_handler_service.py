@@ -145,11 +145,10 @@ def test_validate_and_initialize_user_module(inference_handler):
     prediction = inference_handler.handle([{"body": b""}], CONTEXT)
     assert "output" in prediction[0]
 
-    context = Mock()
-    assert inference_handler.load({}, context) == "model"
-    assert inference_handler.preprocess({}, "", context) == "data"
-    assert inference_handler.predict({}, "model", context) == "output"
-    assert inference_handler.postprocess("output", "", context) == "output"
+    assert inference_handler.load({}, CONTEXT) == "model"
+    assert inference_handler.preprocess({}, "", CONTEXT) == "data"
+    assert inference_handler.predict({}, "model", CONTEXT) == "output"
+    assert inference_handler.postprocess("output", "", CONTEXT) == "output"
 
 
 def test_validate_and_initialize_user_module_transform_fn():
@@ -162,6 +161,5 @@ def test_validate_and_initialize_user_module_transform_fn():
     CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
     CONTEXT.metrics = MetricsStore(1, MODEL)
     assert "output" in inference_handler.handle([{"body": b"dummy"}], CONTEXT)[0]
-    context = Mock()
-    assert inference_handler.load({}, context) == "Loading inference_tranform_fn.py"
-    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json", context) == "output dummy"
+    assert inference_handler.load({}, CONTEXT) == "Loading inference_tranform_fn.py"
+    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json", CONTEXT) == "output dummy"
