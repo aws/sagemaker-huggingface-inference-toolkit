@@ -99,7 +99,7 @@ class _JSONEncoder(json.JSONEncoder):
             return super(_JSONEncoder, self).default(obj)
 
 
-def encode_json(content, accept_type):
+def encode_json(content, accept_type=None):
     """
     encodes json with custom `JSONEncoder`
     """
@@ -113,7 +113,7 @@ def encode_json(content, accept_type):
     )
 
 
-def _array_to_npy(array_like, accept_type):
+def _array_to_npy(array_like, accept_type=None):
     """Convert an array-like object to the NPY format.
 
     To understand better what an array-like object is see:
@@ -131,7 +131,7 @@ def _array_to_npy(array_like, accept_type):
     return buffer.getvalue()
 
 
-def encode_csv(content, accept_type):
+def encode_csv(content, accept_type=None):
     """Convert the result of a transformers pipeline to CSV.
     Args:
         content (dict | list): result of transformers pipeline.
