@@ -72,7 +72,7 @@ def get_input_shapes(model_dir):
     )
     return {"batch_size": int(batch_size), "sequence_length": int(sequence_length)}
 
-
+# TODO: not used yet
 def get_optimum_neuron_pipeline(task, model_dir):
     """Method to get optimum neuron pipeline for a given task. Method checks if task is supported by optimum neuron and if required environment variables are set, in case model is not converted. If all checks pass, optimum neuron pipeline is returned. If checks fail, an error is raised."""
     from optimum.neuron.pipelines import NEURONX_SUPPORTED_TASKS, pipeline
