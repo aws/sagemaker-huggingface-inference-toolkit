@@ -18,6 +18,7 @@ import os
 import sys
 import time
 from abc import ABC
+from inspect import signature
 
 from sagemaker_inference import environment, utils
 from transformers.pipelines import SUPPORTED_TASKS
@@ -29,7 +30,7 @@ from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     get_pipeline,
     infer_task_from_model_architecture,
 )
-from inspect import signature
+
 
 ENABLE_MULTI_MODEL = os.getenv("SAGEMAKER_MULTI_MODEL", "false") == "true"
 PYTHON_PATH_ENV = "PYTHONPATH"
@@ -76,12 +77,6 @@ class HuggingFaceHandlerService(ABC):
         self.device = self.get_device()
         self.model = self.run_handler_function(self.load, *(self.model_dir,))
         self.initialized = True
-        # # Load methods from file
-        # if (not self._initialized) and ENABLE_MULTI_MODEL:
-        #     code_dir = os.path.join(context.system_properties.get("model_dir"), "code")
-        #     sys.path.append(code_dir)
-        #     self._initialized = True
-        # # add model_dir/code to python path
 
     def get_device(self):
         """
@@ -92,7 +87,7 @@ class HuggingFaceHandlerService(ABC):
         else:
             return -1
 
-    def load(self, model_dir, context = None):
+    def load(self, model_dir, context=None):
         """
         The Load handler is responsible for loading the Hugging Face transformer model.
         It can be overridden to load the model from storage
@@ -111,7 +106,7 @@ class HuggingFaceHandlerService(ABC):
             )
         return hf_pipeline
 
-    def preprocess(self, input_data, content_type, context = None):
+    def preprocess(self, input_data, content_type, context=None):
         """
         The preprocess handler is responsible for deserializing the input data into
         an object for prediction, can handle JSON.
@@ -136,7 +131,7 @@ class HuggingFaceHandlerService(ABC):
         decoded_input_data = decoder_encoder.decode(input_data, content_type)
         return decoded_input_data
 
-    def predict(self, data, model, context = None):
+    def predict(self, data, model, context=None):
         """The predict handler is responsible for model predictions. Calls the `__call__` method of the provided `Pipeline`
         on decoded_input_data deserialized in input_fn. Runs prediction on GPU if is available.
         The predict handler can be overridden to implement the model inference.
@@ -158,7 +153,7 @@ class HuggingFaceHandlerService(ABC):
             prediction = model(inputs)
         return prediction
 
-    def postprocess(self, prediction, accept, context = None):
+    def postprocess(self, prediction, accept, context=None):
         """
         The postprocess handler is responsible for serializing the prediction result to
         the desired accept type, can handle JSON.
@@ -170,7 +165,7 @@ class HuggingFaceHandlerService(ABC):
         """
         return decoder_encoder.encode(prediction, accept)
 
-    def transform_fn(self, model, input_data, content_type, accept, context = None):
+    def transform_fn(self, model, input_data, content_type, accept, context=None):
         """
         Transform function ("transform_fn") can be used to write one function with pre/post-processing steps and predict step in it.
         This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn"
@@ -272,7 +267,7 @@ class HuggingFaceHandlerService(ABC):
                 self.postprocess = postprocess_fn
             if transform_fn is not None:
                 self.transform_fn = transform_fn
-    
+
     def run_handler_function(self, func, *argv):
         """Helper to call the handler function which covers 2 cases:
         1. the handle function takes context
@@ -288,8 +283,6 @@ class HuggingFaceHandlerService(ABC):
             result = func(*argv_context)
         else:
             raise TypeError(
-                "{} takes {} arguments but {} were given.".format(
-                    func.__name__, num_func_input, len(argv)
-                )
+                "{} takes {} arguments but {} were given.".format(func.__name__, num_func_input, len(argv))
             )
         return result

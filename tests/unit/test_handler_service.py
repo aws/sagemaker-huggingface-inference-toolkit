@@ -18,10 +18,10 @@ import tempfile
 import pytest
 from sagemaker_inference import content_types
 from transformers.testing_utils import require_torch, slow
-from mock import Mock
 
 from mms.context import Context, RequestProcessor
 from mms.metrics.metrics_store import MetricsStore
+from mock import Mock
 from sagemaker_huggingface_inference_toolkit import handler_service
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
 
@@ -162,4 +162,7 @@ def test_validate_and_initialize_user_module_transform_fn():
     CONTEXT.metrics = MetricsStore(1, MODEL)
     assert "output" in inference_handler.handle([{"body": b"dummy"}], CONTEXT)[0]
     assert inference_handler.load({}, CONTEXT) == "Loading inference_tranform_fn.py"
-    assert inference_handler.transform_fn("model", "dummy", "application/json", "application/json", CONTEXT) == "output dummy"
+    assert (
+        inference_handler.transform_fn("model", "dummy", "application/json", "application/json", CONTEXT)
+        == "output dummy"
+    )
