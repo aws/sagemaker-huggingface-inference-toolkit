@@ -77,6 +77,12 @@ class HuggingFaceHandlerService(ABC):
         self.device = self.get_device()
         self.model = self.run_handler_function(self.load, *(self.model_dir,))
         self.initialized = True
+        # # Load methods from file
+        # if (not self._initialized) and ENABLE_MULTI_MODEL:
+        #     code_dir = os.path.join(context.system_properties.get("model_dir"), "code")
+        #     sys.path.append(code_dir)
+        #     self._initialized = True
+        # # add model_dir/code to python path
 
     def get_device(self):
         """
@@ -90,7 +96,12 @@ class HuggingFaceHandlerService(ABC):
     def load(self, model_dir, context=None):
         """
         The Load handler is responsible for loading the Hugging Face transformer model.
-        It can be overridden to load the model from storage
+        It can be overridden to load the model from storage.
+
+        Args:
+            model_dir (str): The directory where model files are stored.
+            context (obj): metadata on the incoming request data (default: None).
+
         Returns:
             hf_pipeline (Pipeline): A Hugging Face Transformer pipeline.
         """
@@ -110,10 +121,12 @@ class HuggingFaceHandlerService(ABC):
         """
         The preprocess handler is responsible for deserializing the input data into
         an object for prediction, can handle JSON.
-        The preprocess handler can be overridden for data or feature transformation,
+        The preprocess handler can be overridden for data or feature transformation.
+
         Args:
-            input_data: the request payload serialized in the content_type format
-            content_type: the request content_type
+            input_data: the request payload serialized in the content_type format.
+            content_type: the request content_type.
+            context (obj): metadata on the incoming request data (default: None).
 
         Returns:
             decoded_input_data (dict): deserialized input_data into a Python dictonary.
@@ -135,9 +148,12 @@ class HuggingFaceHandlerService(ABC):
         """The predict handler is responsible for model predictions. Calls the `__call__` method of the provided `Pipeline`
         on decoded_input_data deserialized in input_fn. Runs prediction on GPU if is available.
         The predict handler can be overridden to implement the model inference.
+
         Args:
             data (dict): deserialized decoded_input_data returned by the input_fn
             model : Model returned by the `load` method or if it is a custom module `model_fn`.
+            context (obj): metadata on the incoming request data (default: None).
+
         Returns:
             obj (dict): prediction result.
         """
@@ -157,10 +173,12 @@ class HuggingFaceHandlerService(ABC):
         """
         The postprocess handler is responsible for serializing the prediction result to
         the desired accept type, can handle JSON.
-        The postprocess handler can be overridden for inference response transformation
+        The postprocess handler can be overridden for inference response transformation.
+
         Args:
-            prediction (dict): a prediction result from predict
-            accept (str): type which the output data needs to be serialized
+            prediction (dict): a prediction result from predict.
+            accept (str): type which the output data needs to be serialized.
+            context (obj): metadata on the incoming request data (default: None).
         Returns: output data serialized
         """
         return decoder_encoder.encode(prediction, accept)
@@ -168,12 +186,14 @@ class HuggingFaceHandlerService(ABC):
     def transform_fn(self, model, input_data, content_type, accept, context=None):
         """
         Transform function ("transform_fn") can be used to write one function with pre/post-processing steps and predict step in it.
-        This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn"
+        This fuction can't be mixed with "input_fn", "output_fn" or "predict_fn".
+
         Args:
             model: Model returned by the model_fn above
             input_data: Data received for inference
             content_type: The content type of the inference data
             accept: The response accept type.
+            context (obj): metadata on the incoming request data (default: None).
 
         Returns: Response in the "accept" format type.
 
