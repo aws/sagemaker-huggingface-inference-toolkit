@@ -117,6 +117,21 @@ The `HF_TRUST_REMOTE_CODE` environment variable defines wether or not to allow f
 HF_TRUST_REMOTE_CODE="True"
 ```
 
+#### `HF_OPTIMUM_BATCH_SIZE`
+
+The `HF_OPTIMUM_BATCH_SIZE` environment variable defines the batch size, which is used when compiling the model to Neuron. The default value is `1`. Not required when model is already converted. 
+
+```bash
+HF_OPTIMUM_BATCH_SIZE="1"
+```
+
+#### `HF_OPTIMUM_SEQUENCE_LENGTH`
+
+The `HF_OPTIMUM_SEQUENCE_LENGTH` environment variable defines the sequence length, which is used when compiling the model to Neuron. There is no default value. Not required when model is already converted. 
+
+```bash
+HF_OPTIMUM_SEQUENCE_LENGTH="128"
+```
 
 ---
 
