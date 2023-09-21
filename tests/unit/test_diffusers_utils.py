@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 import tempfile
-from PIL import Image
-from transformers.testing_utils import require_torch, slow
-from sagemaker_huggingface_inference_toolkit.diffusers_utils import SMAutoPipelineForText2Image
 
+from transformers.testing_utils import require_torch, slow
+
+from PIL import Image
+from sagemaker_huggingface_inference_toolkit.diffusers_utils import SMAutoPipelineForText2Image
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
 
 

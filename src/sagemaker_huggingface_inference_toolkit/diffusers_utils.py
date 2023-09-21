@@ -16,6 +16,7 @@ import logging
 
 from transformers.utils.import_utils import is_torch_bf16_gpu_available
 
+
 logger = logging.getLogger(__name__)
 
 _diffusers = importlib.util.find_spec("diffusers") is not None
@@ -27,6 +28,7 @@ def is_diffusers_available():
 
 if is_diffusers_available():
     import torch
+
     from diffusers import AutoPipelineForText2Image, DPMSolverMultistepScheduler, StableDiffusionPipeline
 
 

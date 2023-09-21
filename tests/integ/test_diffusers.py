@@ -1,16 +1,12 @@
-import json
 import os
 import re
-
-import numpy as np
-import pytest
+from io import BytesIO
 
 import boto3
 from integ.utils import clean_up, timeout_and_delete_by_name
+from PIL import Image
 from sagemaker import Session
 from sagemaker.model import Model
-from io import BytesIO
-from PIL import Image
 
 
 os.environ["AWS_DEFAULT_REGION"] = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
@@ -45,14 +41,13 @@ def get_framework_ecr_image(registry_id="763104351884", repository_name="hugging
 
 # TODO: needs existing container
 def test_text_to_image_model():
-    image_uri = get_framework_ecr_image(repository_name=f"huggingface-pytorch-inference", device="gpu")
+    image_uri = get_framework_ecr_image(repository_name="huggingface-pytorch-inference", device="gpu")
 
-    name = f"hf-test-text-to-image"
+    name = "hf-test-text-to-image"
     task = "text-to-image"
     model = "echarlaix/tiny-random-stable-diffusion-xl"
     # instance_type = "ml.m5.large" if device == "cpu" else "ml.g4dn.xlarge"
     instance_type = "local_gpu"
-    number_of_requests = 100
     env = {"HF_MODEL_ID": model, "HF_TASK": task}
 
     sagemaker_session = Session()

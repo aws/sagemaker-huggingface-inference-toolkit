@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Optional
 
 from huggingface_hub import HfApi, login, snapshot_download
-from transformers import pipeline, AutoTokenizer
+from transformers import AutoTokenizer, pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
