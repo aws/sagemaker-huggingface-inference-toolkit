@@ -135,7 +135,7 @@ def test_postprocess(inference_handler):
 
 
 def test_validate_and_initialize_user_module(inference_handler):
-    model_dir = os.path.join(os.getcwd(), "tests/resources/model_input_predict_output_fn")
+    model_dir = os.path.join(os.getcwd(), "tests/resources/model_input_predict_output_fn_with_context")
     CONTEXT = Context("", model_dir, {}, 1, -1, "1.1.4")
 
     inference_handler.initialize(CONTEXT)
@@ -154,7 +154,7 @@ def test_validate_and_initialize_user_module(inference_handler):
 def test_validate_and_initialize_user_module_transform_fn():
     os.environ["SAGEMAKER_PROGRAM"] = "inference_tranform_fn.py"
     inference_handler = handler_service.HuggingFaceHandlerService()
-    model_dir = os.path.join(os.getcwd(), "tests/resources/model_transform_fn")
+    model_dir = os.path.join(os.getcwd(), "tests/resources/model_transform_fn_with_context")
     CONTEXT = Context("dummy", model_dir, {}, 1, -1, "1.1.4")
 
     inference_handler.initialize(CONTEXT)

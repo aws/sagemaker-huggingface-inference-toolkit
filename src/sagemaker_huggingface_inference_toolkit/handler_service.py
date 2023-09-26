@@ -166,6 +166,8 @@ class HuggingFaceHandlerService(ABC):
         if parameters is not None:
             prediction = model(inputs, **parameters)
         else:
+            print("These are the inputs")
+            print(inputs)
             prediction = model(inputs)
         return prediction
 
