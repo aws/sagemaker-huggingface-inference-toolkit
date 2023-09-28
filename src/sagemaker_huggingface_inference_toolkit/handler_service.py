@@ -58,6 +58,11 @@ class HuggingFaceHandlerService(ABC):
         self.context = None
         self.manifest = None
         self.environment = environment.Environment()
+        self.is_custom_load_fn = False
+        self.is_custom_preprocess_fn = False
+        self.is_custom_predict_fn = False
+        self.is_custom_postprocess_fn = False
+        self.is_custom_transform_fn = False
 
     def initialize(self, context):
         """
@@ -75,7 +80,10 @@ class HuggingFaceHandlerService(ABC):
         self.validate_and_initialize_user_module()
 
         self.device = self.get_device()
-        self.model = self.run_handler_function(self.load, *(self.model_dir,))
+        if self.is_custom_load_fn:
+            self.model = self.run_handler_function(self.load, *(self.model_dir,))
+        else:
+            self.model = self.load(self.model_dir)
         self.initialized = True
         # # Load methods from file
         # if (not self._initialized) and ENABLE_MULTI_MODEL:
@@ -166,8 +174,6 @@ class HuggingFaceHandlerService(ABC):
         if parameters is not None:
             prediction = model(inputs, **parameters)
         else:
-            print("These are the inputs")
-            print(inputs)
             prediction = model(inputs)
         return prediction
 
@@ -202,11 +208,20 @@ class HuggingFaceHandlerService(ABC):
         """
         # run pipeline
         start_time = time.time()
-        processed_data = self.run_handler_function(self.preprocess, *(input_data, content_type))
+        if self.is_custom_preprocess_fn:
+            processed_data = self.run_handler_function(self.preprocess, *(input_data, content_type))
+        else:
+            processed_data = self.preprocess(input_data, content_type)
         preprocess_time = time.time() - start_time
-        predictions = self.run_handler_function(self.predict, *(processed_data, model))
+        if self.is_custom_predict_fn:
+            predictions = self.run_handler_function(self.predict, *(processed_data, model))
+        else:
+            predictions = self.predict(processed_data, model)
         predict_time = time.time() - preprocess_time - start_time
-        response = self.run_handler_function(self.postprocess, *(predictions, accept))
+        if self.is_custom_postprocess_fn:
+            response = self.run_handler_function(self.postprocess, *(predictions, accept))
+        else:
+            response = self.postprocess(predictions, accept)
         postprocess_time = time.time() - predict_time - preprocess_time - start_time
 
         logger.info(
@@ -248,7 +263,12 @@ class HuggingFaceHandlerService(ABC):
                 input_data = input_data.decode("utf-8")
 
             predict_start = time.time()
-            response = self.run_handler_function(self.transform_fn, *(self.model, input_data, content_type, accept))
+            if self.is_custom_transform_fn:
+                response = self.run_handler_function(
+                    self.transform_fn, *(self.model, input_data, content_type, accept)
+                )
+            else:
+                response = self.transform_fn(self.model, input_data, content_type, accept)
             predict_end = time.time()
 
             context.metrics.add_time("Transform Fn", round((predict_end - predict_start) * 1000, 2))
@@ -281,14 +301,19 @@ class HuggingFaceHandlerService(ABC):
 
             if load_fn is not None:
                 self.load = load_fn
+                self.is_custom_load_fn = True
             if preprocess_fn is not None:
                 self.preprocess = preprocess_fn
+                self.is_custom_preprocess_fn = True
             if predict_fn is not None:
                 self.predict = predict_fn
+                self.is_custom_predict_fn = True
             if postprocess_fn is not None:
                 self.postprocess = postprocess_fn
+                self.is_custom_postprocess_fn = True
             if transform_fn is not None:
                 self.transform_fn = transform_fn
+                self.is_custom_transform_fn = True
 
     def run_handler_function(self, func, *argv):
         """Helper to call the handler function which covers 2 cases:
