@@ -48,7 +48,7 @@ def strtobool(val):
     val = val.lower()
     if val in ("y", "yes", "t", "true", "on", "1", "TRUE", "True"):
         return True
-    elif val in ("n", "no", "f", "false", "off", "0", "FALSE", "False):
+    elif val in ("n", "no", "f", "false", "off", "0", "FALSE", "False"):
         return False
     else:
         raise ValueError("invalid truth value %r" % (val,))
