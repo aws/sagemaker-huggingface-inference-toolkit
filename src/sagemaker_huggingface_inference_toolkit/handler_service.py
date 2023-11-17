@@ -116,9 +116,13 @@ class HuggingFaceHandlerService(ABC):
         elif "config.json" in os.listdir(model_dir):
             task = infer_task_from_model_architecture(f"{model_dir}/config.json")
             hf_pipeline = get_pipeline(task=task, model_dir=model_dir, device=self.device)
+        elif "model_index.json" in os.listdir(model_dir):
+            task = "text-to-image"
+            hf_pipeline = get_pipeline(task=task, model_dir=model_dir, device=self.device)
         else:
             raise ValueError(
-                f"You need to define one of the following {list(SUPPORTED_TASKS.keys())} as env 'HF_TASK'.", 403
+                f"You need to define one of the following {list(SUPPORTED_TASKS.keys())} or text-to-image as env 'HF_TASK'.",
+                403,
             )
         return hf_pipeline
 

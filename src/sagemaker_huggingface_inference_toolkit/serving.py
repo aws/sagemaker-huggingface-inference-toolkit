@@ -32,3 +32,7 @@ def _start_mms():
 
 def main():
     _start_mms()
+
+
+if __name__ == "__main__":
+    main()

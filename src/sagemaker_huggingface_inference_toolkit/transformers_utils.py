@@ -18,13 +18,12 @@ import os
 from pathlib import Path
 from typing import Optional
 
-from huggingface_hub import HfApi
-from huggingface_hub.file_download import cached_download, hf_hub_url
-from transformers import pipeline
+from huggingface_hub import HfApi, login, snapshot_download
+from transformers import AutoTokenizer, pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
-from sagemaker_huggingface_inference_toolkit.optimum_utils import is_optimum_neuron_available
+from sagemaker_huggingface_inference_toolkit.diffusers_utils import get_diffusers_pipeline, is_diffusers_available
 
 
 if is_tf_available():
@@ -40,43 +39,40 @@ def is_aws_neuron_available():
     return _aws_neuron_available
 
 
+def strtobool(val):
+    """Convert a string representation of truth to True or False.
+    True values are 'y', 'yes', 't', 'true', 'on', '1', 'TRUE', or 'True'; false values
+    are 'n', 'no', 'f', 'false', 'off', '0', 'FALSE' or 'False.  Raises ValueError if
+    'val' is anything else.
+    """
+    val = val.lower()
+    if val in ("y", "yes", "t", "true", "on", "1", "TRUE", "True"):
+        return True
+    elif val in ("n", "no", "f", "false", "off", "0", "FALSE", "False"):
+        return False
+    else:
+        raise ValueError("invalid truth value %r" % (val,))
+
+
 logger = logging.getLogger(__name__)
 
-PYTORCH_WEIGHTS_NAME = "pytorch_model.bin"
-TF2_WEIGHTS_NAME = "tf_model.h5"
-FRAMEWORK_MAPPING = {"pytorch": PYTORCH_WEIGHTS_NAME, "tensorflow": TF2_WEIGHTS_NAME}
 
-FILE_LIST_NAMES = [
-    "config.json",
-    "special_tokens_map.json",
-    "tokenizer_config.json",
-    "tokenizer.json",
-    "vocab.json",
-    "vocab.txt",
-    "merges.txt",
-    "dict.txt",
-    "preprocessor_config.json",
-    "added_tokens.json",
-    "README.md",
-    "spiece.model",
-    "sentencepiece.bpe.model",
-    "sentencepiece.bpe.vocab",
-    "sentence.bpe.model",
-    "bpe.codes",
-    "source.spm",
-    "target.spm",
-    "spm.model",
-    "sentence_bert_config.json",
-    "sentence_roberta_config.json",
-    "sentence_distilbert_config.json",
-    "added_tokens.json",
-    "model_args.json",
-    "entity_vocab.json",
-    "pooling_config.json",
-]
+FRAMEWORK_MAPPING = {
+    "pytorch": "pytorch*",
+    "tensorflow": "tf*",
+    "tf": "tf*",
+    "pt": "pytorch*",
+    "flax": "flax*",
+    "rust": "rust*",
+    "onnx": "*onnx*",
+    "safetensors": "*safetensors",
+    "coreml": "*mlmodel",
+    "tflite": "*tflite",
+    "savedmodel": "*tar.gz",
+    "openvino": "*openvino*",
+    "ckpt": "*ckpt",
+}
 
-if is_optimum_neuron_available():
-    FILE_LIST_NAMES.append("model.neuron")
 
 REPO_ID_SEPARATOR = "__"
 
@@ -99,6 +95,21 @@ ARCHITECTURES_2_TASK = {
 
 HF_API_TOKEN = os.environ.get("HF_API_TOKEN", None)
 HF_MODEL_REVISION = os.environ.get("HF_MODEL_REVISION", None)
+TRUST_REMOTE_CODE = strtobool(os.environ.get("HF_TRUST_REMOTE_CODE", "False"))
+
+
+def create_artifact_filter(framework):
+    """
+    Returns a list of regex pattern based on the DL Framework. which will be to used to ignore files when downloading
+    """
+    ignore_regex_list = list(set(FRAMEWORK_MAPPING.values()))
+
+    pattern = FRAMEWORK_MAPPING.get(framework, None)
+    if pattern in ignore_regex_list:
+        ignore_regex_list.remove(pattern)
+        return ignore_regex_list
+    else:
+        return []
 
 
 def wrap_conversation_pipeline(pipeline):
@@ -179,11 +190,8 @@ def _load_model_from_hub(
         "This is an experimental beta features, which allows downloading model from the Hugging Face Hub on start up. "
         "It loads the model defined in the env var `HF_MODEL_ID`"
     )
-    # get all files from repository
-    _api = HfApi()
-    model_info = _api.model_info(repo_id=model_id, revision=revision, token=use_auth_token)
-    os.makedirs(model_dir, exist_ok=True)
-
+    if use_auth_token is not None:
+        login(token=use_auth_token)
     # extracts base framework
     framework = _get_framework()
 
@@ -191,21 +199,23 @@ def _load_model_from_hub(
     storage_folder = _build_storage_path(model_id, model_dir, revision)
     os.makedirs(storage_folder, exist_ok=True)
 
-    # filters files to download
-    download_file_list = [
-        file.rfilename
-        for file in model_info.siblings
-        if file.rfilename in FILE_LIST_NAMES + [FRAMEWORK_MAPPING[framework]]
-    ]
+    # check if safetensors weights are available
+    if framework == "pytorch":
+        files = HfApi().model_info(model_id).siblings
+        if any(f.rfilename.endswith("safetensors") for f in files):
+            framework = "safetensors"
 
-    # download files to storage_folder and removes cache
-    for file in download_file_list:
-        url = hf_hub_url(model_id, filename=file, revision=revision)
+    # create regex to only include the framework specific weights
+    ignore_regex = create_artifact_filter(framework)
 
-        path = cached_download(url, cache_dir=storage_folder, force_filename=file, use_auth_token=use_auth_token)
-
-        if os.path.exists(path + ".lock"):
-            os.remove(path + ".lock")
+    # Download the repository to the workdir and filter out non-framework specific weights
+    snapshot_download(
+        model_id,
+        revision=revision,
+        local_dir=str(storage_folder),
+        local_dir_use_symlinks=False,
+        ignore_patterns=ignore_regex,
+    )
 
     return storage_folder
 
@@ -273,8 +283,23 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
     else:
         kwargs["tokenizer"] = model_dir
 
-    # load pipeline
-    hf_pipeline = pipeline(task=task, model=model_dir, device=device, **kwargs)
+    if TRUST_REMOTE_CODE and os.environ.get("HF_MODEL_ID", None) is not None and device == 0:
+        tokenizer = AutoTokenizer.from_pretrained(os.environ["HF_MODEL_ID"])
+
+        hf_pipeline = pipeline(
+            task=task,
+            model=os.environ["HF_MODEL_ID"],
+            tokenizer=tokenizer,
+            trust_remote_code=TRUST_REMOTE_CODE,
+            model_kwargs={"device_map": "auto", "torch_dtype": "auto"},
+        )
+    elif is_diffusers_available() and task == "text-to-image":
+        hf_pipeline = get_diffusers_pipeline(task=task, model_dir=model_dir, device=device, **kwargs)
+    else:
+        # load pipeline
+        hf_pipeline = pipeline(
+            task=task, model=model_dir, device=device, trust_remote_code=TRUST_REMOTE_CODE, **kwargs
+        )
 
     # wrapp specific pipeline to support better ux
     if task == "conversational":
