@@ -284,7 +284,6 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         kwargs["tokenizer"] = model_dir
 
     if TRUST_REMOTE_CODE and os.environ.get("HF_MODEL_ID", None) is not None and device == 0:
-        torch_dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] == 8 else torch.float16
         tokenizer = AutoTokenizer.from_pretrained(os.environ["HF_MODEL_ID"])
 
         hf_pipeline = pipeline(
@@ -292,7 +291,7 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
             model=os.environ["HF_MODEL_ID"],
             tokenizer=tokenizer,
             trust_remote_code=TRUST_REMOTE_CODE,
-            model_kwargs={"device_map": "auto", "torch_dtype": torch_dtype},
+            model_kwargs={"device_map": "auto", "torch_dtype": "auto"},
         )
     elif is_diffusers_available() and task == "text-to-image":
         hf_pipeline = get_diffusers_pipeline(task=task, model_dir=model_dir, device=device, **kwargs)

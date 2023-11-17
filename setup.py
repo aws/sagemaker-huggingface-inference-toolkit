@@ -55,6 +55,7 @@ extras = {}
 
 # Hugging Face specific dependencies
 extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.17.0"]
+extras["diffusers"] = ["diffusers==0.23.1"]
 
 # framework specific dependencies
 extras["torch"] = ["torch>=1.8.0", "torchaudio"]
@@ -87,8 +88,7 @@ extras["quality"] = [
     "flake8>=3.8.3",
 ]
 
-extras["dev"] = extras["transformers"] + extras["mms"] + extras["torch"] + extras["tensorflow"]
-
+extras["dev"] = extras["transformers"] + extras["mms"] + extras["torch"] + extras["tensorflow"] + extras["diffusers"]
 setup(
     name="sagemaker-huggingface-inference-toolkit",
     version=VERSION,
