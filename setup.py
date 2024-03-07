@@ -54,11 +54,11 @@ install_requires = [
 extras = {}
 
 # Hugging Face specific dependencies
-extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.17.0"]
+extras["transformers"] = ["transformers[sklearn,sentencepiece]>=4.5.1"]
 extras["diffusers"] = ["diffusers>=0.23.0"]
 
 # framework specific dependencies
-extras["torch"] = ["torch>=1.8.0", "torchaudio"]
+extras["torch"] = ["torch>=2.1.0", "torchaudio"]
 
 # TODO: Remove upper bound of TF 2.11 once transformers release contains this fix: https://github.com/huggingface/evaluate/pull/372
 extras["tensorflow"] = ["tensorflow>=2.4.0,<2.11"]
@@ -68,7 +68,7 @@ extras["mms"] = ["multi-model-server>=1.1.4", "retrying"]
 
 
 extras["test"] = [
-    "pytest",
+    "pytest<=8.0.0",
     "pytest-xdist",
     "parameterized",
     "psutil",

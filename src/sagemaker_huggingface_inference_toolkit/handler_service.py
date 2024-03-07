@@ -121,7 +121,8 @@ class HuggingFaceHandlerService(ABC):
             hf_pipeline = get_pipeline(task=task, model_dir=model_dir, device=self.device)
         else:
             raise ValueError(
-                f"You need to define one of the following {list(SUPPORTED_TASKS.keys())} or text-to-image as env 'HF_TASK'.",
+                f"Task not supported via {list(SUPPORTED_TASKS.keys())} or"
+                "Use inference.py to install unsupported task separately",
                 403,
             )
         return hf_pipeline

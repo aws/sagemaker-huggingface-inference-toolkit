@@ -132,6 +132,15 @@ def test_infer_task_from_model_architecture():
 
 
 @require_torch
+def test_infer_task_from_model_architecture_from_env_variable():
+    os.environ["HF_TASK"] = "image-classification"
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        storage_dir = _load_model_from_hub(TASK_MODEL, tmpdirname)
+        task = infer_task_from_model_architecture(f"{storage_dir}/config.json")
+        assert task == "image-classification"
+
+
+@require_torch
 def test_wrap_conversation_pipeline():
     init_pipeline = pipeline(
         "conversational",
