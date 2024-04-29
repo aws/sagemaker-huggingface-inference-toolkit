@@ -157,7 +157,14 @@ The custom module can override the following methods:
 * `output_fn(prediction, accept)`: overrides the default method for postprocessing, the return value `result` will be the respond of your request(e.g.`JSON`). The inputs are `predictions`, the result of the `predict()` method and `accept` the return accept type from the HTTP Request, e.g. `application/json`
 
 
+## 🏎️ Deploy Models on AWS Inferentia2
 
+The SageMaker Hugging Face Inference Toolkit provides support for deploying Hugging Face on AWS Inferentia2. To deploy a model on Inferentia2 you have 3 options:
+* Provide an already compiled model with a `model.neuron` file as `HF_MODEL_ID`, .e.g. `optimum/tiny_random_bert_neuron`
+* Provide the `HF_OPTIMUM_BATCH_SIZE` and `HF_OPTIMUM_SEQUENCE_LENGTH` environment variables to compile the model on the fly, e.g. `HF_OPTIMUM_BATCH_SIZE=1 HF_OPTIMUM_SEQUENCE_LENGTH=128`
+* Include `neuron` dictionary in the [config.json](https://huggingface.co/optimum/tiny_random_bert_neuron/blob/main/config.json) file in the model archive, e.g. `neuron: {"static_batch_size": 1, "static_sequence_length": 128}`
+
+The currently supported tasks can be found [here](https://huggingface.co/docs/optimum-neuron/en/package_reference/supported_models). If you plan to deploy an LLM, we recommend taking a look at [Neuronx TGI](https://huggingface.co/blog/text-generation-inference-on-inferentia2), which is purposly build for LLMs 
 
 ---
 ## 🤝 Contributing
@@ -201,4 +208,28 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '"{\"inputs\": \"Camera\"}" \
   --output image.png
+```
+
+
+## Run Inferentia2 Model Locally
+
+_Note: You need to run this on an Inferentia2 instance._
+
+1. manually change `MMS_CONFIG_FILE`
+```
+wget -O sagemaker-mms.properties https://raw.githubusercontent.com/aws/deep-learning-containers/master/huggingface/build_artifacts/inference/config.properties
+```
+
+2. Run Container, e.g. `text-classification` with `HF_OPTIMUM_BATCH_SIZE` and `HF_OPTIMUM_SEQUENCE_LENGTH`
+```
+HF_MODEL_ID="distilbert/distilbert-base-uncased-finetuned-sst-2-english" HF_TASK="text-classification" HF_OPTIMUM_BATCH_SIZE=1 HF_OPTIMUM_SEQUENCE_LENGTH=128 python src/sagemaker_huggingface_inference_toolkit/serving.py
+```
+3. Adjust `handler_service.py` and comment out `if content_type in content_types.UTF8_TYPES:` thats needed for SageMaker but cannot be used locally
+
+3. Send request 
+```
+curl --request POST \
+  --url http://localhost:8080/invocations \
+  --header 'Content-Type: application/json' \
+  --data "{\"inputs\": \"I like you.\"}"
 ```

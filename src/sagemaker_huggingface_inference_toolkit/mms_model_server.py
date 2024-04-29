@@ -33,11 +33,11 @@ from sagemaker_inference.model_server import (
 )
 
 from sagemaker_huggingface_inference_toolkit import handler_service
+from sagemaker_huggingface_inference_toolkit.optimum_utils import is_optimum_neuron_available
 from sagemaker_huggingface_inference_toolkit.transformers_utils import (
     HF_API_TOKEN,
     HF_MODEL_REVISION,
     _load_model_from_hub,
-    is_aws_neuron_available,
 )
 
 
@@ -73,11 +73,6 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
     elif use_hf_hub:
         # Use different model store directory
         model_store = DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY
-        if is_aws_neuron_available():
-            raise ValueError(
-                "Hugging Face Hub deployments are currently not supported with AWS Neuron and Inferentia."
-                "You need to create a `inference.py` script to run your model using AWS Neuron"
-            )
         storage_dir = _load_model_from_hub(
             model_id=os.environ["HF_MODEL_ID"],
             model_dir=DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY,
@@ -89,6 +84,14 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
         _set_python_path()
 
     env = environment.Environment()
+
+    # Set the number of workers to available number if optimum neuron is available and not already set
+    if is_optimum_neuron_available() and os.environ.get("SAGEMAKER_MODEL_SERVER_WORKERS", None) is None:
+        from optimum.neuron.utils.cache_utils import get_num_neuron_cores
+        try:
+            env._model_server_workers = str(get_num_neuron_cores())
+        except:
+            env._model_server_workers="1"
 
     # Note: multi-model default config already sets default_service_handler
     handler_service_for_config = None if ENABLE_MULTI_MODEL else handler_service

@@ -54,7 +54,7 @@ def test_get_input_shapes_from_file():
         )
         input_shapes = get_input_shapes(model_dir=storage_folder)
         assert input_shapes["batch_size"] == 1
-        assert input_shapes["sequence_length"] == 16
+        assert input_shapes["sequence_length"] == 32
 
 
 @require_torch
