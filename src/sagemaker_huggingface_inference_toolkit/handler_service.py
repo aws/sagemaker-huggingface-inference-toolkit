@@ -60,6 +60,7 @@ class HuggingFaceHandlerService(ABC):
         self.model = None
         self.device = -1
         self.initialized = False
+        self.attempted_init = False
         self.context = None
         self.manifest = None
         self.environment = environment.Environment()
@@ -75,6 +76,7 @@ class HuggingFaceHandlerService(ABC):
         :param context: Initial context contains model server system properties.
         :return:
         """
+        self.attempted_init = True
         self.context = context
         properties = context.system_properties
         self.model_dir = properties.get("model_dir")
@@ -245,6 +247,11 @@ class HuggingFaceHandlerService(ABC):
         """
         try:
             if not self.initialized:
+                if self.attempted_init:
+                    logger.warn(
+                        "Model is not initialized, will try to load model again.\n"
+                        "Please consider increase wait time for model loading.\n"
+                    )
                 self.initialize(context)
 
             input_data = data[0].get("body")
