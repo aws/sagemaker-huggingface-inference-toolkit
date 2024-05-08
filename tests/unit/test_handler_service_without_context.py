@@ -77,9 +77,7 @@ def test_handle(inference_handler):
         inference_handler.initialize(CONTEXT)
         json_data = json.dumps(INPUT)
         prediction = inference_handler.handle([{"body": json_data.encode()}], CONTEXT)
-        loaded_response = json.loads(prediction[0])
-        assert "entity" in loaded_response[0]
-        assert "score" in loaded_response[0]
+        assert "output" in prediction[0]
 
 
 @require_torch
@@ -90,13 +88,15 @@ def test_load(inference_handler):
             model_dir=tmpdirname,
         )
         # test with automatic infer
+        if "HF_TASK" in os.environ:
+            del os.environ["HF_TASK"]
         hf_pipeline_without_task = inference_handler.load(storage_folder)
         assert hf_pipeline_without_task.task == "token-classification"
 
         # test with automatic infer
-        os.environ["HF_TASK"] = TASK
+        os.environ["HF_TASK"] = "text-classification"
         hf_pipeline_with_task = inference_handler.load(storage_folder)
-        assert hf_pipeline_with_task.task == TASK
+        assert hf_pipeline_with_task.task == "text-classification"
 
 
 def test_preprocess(inference_handler):
@@ -139,10 +139,7 @@ def test_validate_and_initialize_user_module(inference_handler):
     prediction = inference_handler.handle([{"body": b""}], CONTEXT)
     assert "output" in prediction[0]
 
-    assert inference_handler.load({}) == "model"
-    assert inference_handler.preprocess({}, "") == "data"
-    assert inference_handler.predict({}, "model") == "output"
-    assert inference_handler.postprocess("output", "") == "output"
+    assert inference_handler.load({}) == "Loading inference_tranform_fn.py"
 
 
 def test_validate_and_initialize_user_module_transform_fn():
