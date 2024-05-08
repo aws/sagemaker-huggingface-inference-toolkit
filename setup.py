@@ -68,7 +68,7 @@ extras["mms"] = ["multi-model-server>=1.1.4", "retrying"]
 
 
 extras["test"] = [
-    "pytest",
+    "pytest<8",
     "pytest-xdist",
     "parameterized",
     "psutil",

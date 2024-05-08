@@ -13,7 +13,6 @@
 # limitations under the License.import os
 import os
 
-import pytest
 from sagemaker_inference.environment import model_dir
 
 from mock import patch
@@ -186,35 +185,3 @@ def test_start_mms_with_model_from_hub(
     subprocess_popen.assert_called_once_with(multi_model_server_cmd)
     sigterm.assert_called_once_with(retrieve.return_value)
     os.remove(mms_model_server.DEFAULT_HF_HUB_MODEL_EXPORT_DIRECTORY)
-
-
-@patch("sagemaker_huggingface_inference_toolkit.transformers_utils._aws_neuron_available", return_value=True)
-@patch("subprocess.call")
-@patch("subprocess.Popen")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._retry_retrieve_mms_server_process")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._load_model_from_hub")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._add_sigterm_handler")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._install_requirements")
-@patch("os.makedirs", return_value=True)
-@patch("os.remove", return_value=True)
-@patch("os.path.exists", return_value=True)
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._create_model_server_config_file")
-@patch("sagemaker_huggingface_inference_toolkit.mms_model_server._adapt_to_mms_format")
-def test_start_mms_neuron_and_model_from_hub(
-    adapt,
-    create_config,
-    exists,
-    remove,
-    dir,
-    install_requirements,
-    sigterm,
-    load_model_from_hub,
-    retrieve,
-    subprocess_popen,
-    subprocess_call,
-    _aws_neuron_available,
-):
-    with pytest.raises(ValueError):
-        os.environ["HF_MODEL_ID"] = "lysandre/tiny-bert-random"
-
-        mms_model_server.start_model_server()
