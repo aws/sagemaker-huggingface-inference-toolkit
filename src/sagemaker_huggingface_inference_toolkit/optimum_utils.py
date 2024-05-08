@@ -40,7 +40,7 @@ def get_input_shapes(model_dir):
         config = AutoConfig.from_pretrained(model_dir)
         if hasattr(config, "neuron"):
             # check if static batch size and sequence length are available
-            if config.neuron.get("static_batch_size",None) and config.neuron.get("static_sequence_length",None):
+            if config.neuron.get("static_batch_size", None) and config.neuron.get("static_sequence_length", None):
                 input_shapes["batch_size"] = config.neuron["static_batch_size"]
                 input_shapes["sequence_length"] = config.neuron["static_sequence_length"]
                 input_shapes_available = True
@@ -70,7 +70,7 @@ def get_input_shapes(model_dir):
         raise ValueError(
             "HF_OPTIMUM_SEQUENCE_LENGTH environment variable is not set. Please set HF_OPTIMUM_SEQUENCE_LENGTH to a positive integer."
         )
-    
+
     if not int(sequence_length) > 0:
         raise ValueError(
             f"HF_OPTIMUM_SEQUENCE_LENGTH must be set to a positive integer. Current value is {sequence_length}"
@@ -102,7 +102,7 @@ def get_optimum_neuron_pipeline(task, model_dir):
 
     # get static input shapes to run inference
     input_shapes = get_input_shapes(model_dir)
-    # set NEURON_RT_NUM_CORES to 1 to avoid conflicts with multiple HTTP workers 
+    # set NEURON_RT_NUM_CORES to 1 to avoid conflicts with multiple HTTP workers
     os.environ["NEURON_RT_NUM_CORES"] = "1"
     # get optimum neuron pipeline
     neuron_pipe = pipeline(task, model=model_dir, export=export, input_shapes=input_shapes)

@@ -24,7 +24,10 @@ from transformers.file_utils import is_tf_available, is_torch_available
 from transformers.pipelines import Conversation, Pipeline
 
 from sagemaker_huggingface_inference_toolkit.diffusers_utils import get_diffusers_pipeline, is_diffusers_available
-from sagemaker_huggingface_inference_toolkit.optimum_utils import get_optimum_neuron_pipeline, is_optimum_neuron_available
+from sagemaker_huggingface_inference_toolkit.optimum_utils import (
+    get_optimum_neuron_pipeline,
+    is_optimum_neuron_available,
+)
 
 
 if is_tf_available():
