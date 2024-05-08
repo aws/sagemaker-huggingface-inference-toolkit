@@ -209,7 +209,7 @@ def _load_model_from_hub(
         files = HfApi().model_info(model_id).siblings
         if is_optimum_neuron_available() and any(f.rfilename.endswith("neuron") for f in files):
             framework = "neuronx"
-        if any(f.rfilename.endswith("safetensors") for f in files):
+        elif any(f.rfilename.endswith("safetensors") for f in files):
             framework = "safetensors"
 
     # create regex to only include the framework specific weights
