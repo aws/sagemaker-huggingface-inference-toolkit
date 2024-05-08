@@ -91,7 +91,7 @@ def start_model_server(handler_service=DEFAULT_HANDLER_SERVICE):
 
         try:
             env._model_server_workers = str(get_num_neuron_cores())
-        except:
+        except Exception:
             env._model_server_workers = "1"
 
     # Note: multi-model default config already sets default_service_handler
