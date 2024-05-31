@@ -26,6 +26,7 @@ from __future__ import absolute_import
 import os
 from datetime import date
 from setuptools import find_packages, setup
+import sys
 
 # We don't declare our dependency on transformers here because we build with
 # different packages for different variants
@@ -61,7 +62,15 @@ extras["diffusers"] = ["diffusers>=0.23.0"]
 extras["torch"] = ["torch>=1.8.0", "torchaudio"]
 
 # TODO: Remove upper bound of TF 2.11 once transformers release contains this fix: https://github.com/huggingface/evaluate/pull/372
-extras["tensorflow"] = ["tensorflow>=2.4.0,<2.11"]
+if sys.platform == "darwin":
+    import platform
+    if platform.processor() == "arm":
+        tensorflow_versions = ["tensorflow-macos>=2.4.0,<2.11"]
+    else:
+        tensorflow_versions = ["tensorflow>=2.4.0,<2.11"]
+    extras["tensorflow"] = tensorflow_versions
+else:
+    extras["tensorflow"] = ["tensorflow>=2.4.0,<2.11"]
 
 # MMS Server dependencies
 extras["mms"] = ["multi-model-server>=1.1.4", "retrying"]
