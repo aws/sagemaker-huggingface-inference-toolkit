@@ -21,7 +21,7 @@ from typing import Optional
 from huggingface_hub import HfApi, login, snapshot_download
 from transformers import AutoTokenizer, pipeline
 from transformers.file_utils import is_tf_available, is_torch_available
-from transformers.pipelines import Conversation, Pipeline
+from transformers.pipelines import Pipeline
 
 from sagemaker_huggingface_inference_toolkit.diffusers_utils import get_diffusers_pipeline, is_diffusers_available
 from sagemaker_huggingface_inference_toolkit.optimum_utils import (
@@ -115,25 +115,6 @@ def create_artifact_filter(framework):
         return ignore_regex_list
     else:
         return []
-
-
-def wrap_conversation_pipeline(pipeline):
-    def wrapped_pipeline(inputs, *args, **kwargs):
-        converted_input = Conversation(
-            inputs["text"],
-            past_user_inputs=inputs.get("past_user_inputs", []),
-            generated_responses=inputs.get("generated_responses", []),
-        )
-        prediction = pipeline(converted_input, *args, **kwargs)
-        return {
-            "generated_text": prediction.generated_responses[-1],
-            "conversation": {
-                "past_user_inputs": prediction.past_user_inputs,
-                "generated_responses": prediction.generated_responses,
-            },
-        }
-
-    return wrapped_pipeline
 
 
 def _is_gpu_available():
@@ -309,9 +290,5 @@ def get_pipeline(task: str, device: int, model_dir: Path, **kwargs) -> Pipeline:
         hf_pipeline = pipeline(
             task=task, model=model_dir, device=device, trust_remote_code=TRUST_REMOTE_CODE, **kwargs
         )
-
-    # wrapp specific pipeline to support better ux
-    if task == "conversational":
-        hf_pipeline = wrap_conversation_pipeline(hf_pipeline)
 
     return hf_pipeline
