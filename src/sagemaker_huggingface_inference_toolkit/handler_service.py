@@ -305,7 +305,9 @@ class HuggingFaceHandlerService(ABC):
                 self.load = load_fn
             self.log_func_implementation_found_or_not(preprocess_fn, INPUT_FN)
             if preprocess_fn is not None:
-                self.preprocess_extra_arg = self.function_extra_arg(HuggingFaceHandlerService.preprocess, preprocess_fn)
+                self.preprocess_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.preprocess, preprocess_fn
+                )
                 self.preprocess = preprocess_fn
             self.log_func_implementation_found_or_not(predict_fn, PREDICT_FN)
             if predict_fn is not None:
@@ -313,11 +315,15 @@ class HuggingFaceHandlerService(ABC):
                 self.predict = predict_fn
             self.log_func_implementation_found_or_not(postprocess_fn, OUTPUT_FN)
             if postprocess_fn is not None:
-                self.postprocess_extra_arg = self.function_extra_arg(HuggingFaceHandlerService.postprocess, postprocess_fn)
+                self.postprocess_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.postprocess, postprocess_fn
+                )
                 self.postprocess = postprocess_fn
             self.log_func_implementation_found_or_not(transform_fn, TRANSFORM_FN)
             if transform_fn is not None:
-                self.transform_extra_arg = self.function_extra_arg(HuggingFaceHandlerService.transform_fn, transform_fn)
+                self.transform_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.transform_fn, transform_fn
+                )
                 self.transform_fn = transform_fn
         else:
             logger.info(
@@ -345,7 +351,7 @@ class HuggingFaceHandlerService(ABC):
         default_params = signature(default_func).parameters
         func_params = signature(func).parameters
 
-        if 'self' in default_params:
+        if "self" in default_params:
             num_default_func_input = len(default_params) - 1
         else:
             num_default_func_input = len(default_params)
