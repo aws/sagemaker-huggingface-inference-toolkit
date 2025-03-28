@@ -168,7 +168,7 @@ def test_validate_and_initialize_user_module_transform_fn():
     )
 
 
-def test_validate_and_initialize_user_module_transform_fn():
+def test_validate_and_initialize_user_module_transform_fn_race_condition():
     os.environ["SAGEMAKER_PROGRAM"] = "inference_tranform_fn.py"
     inference_handler = handler_service.HuggingFaceHandlerService()
     model_dir = os.path.join(os.getcwd(), "tests/resources/model_transform_fn_with_context")
