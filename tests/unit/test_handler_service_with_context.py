@@ -166,3 +166,23 @@ def test_validate_and_initialize_user_module_transform_fn():
         inference_handler.transform_fn("model", "dummy", "application/json", "application/json", CONTEXT)
         == "output dummy"
     )
+
+
+def test_validate_and_initialize_user_module_transform_fn():
+    os.environ["SAGEMAKER_PROGRAM"] = "inference_tranform_fn.py"
+    inference_handler = handler_service.HuggingFaceHandlerService()
+    model_dir = os.path.join(os.getcwd(), "tests/resources/model_transform_fn_with_context")
+    CONTEXT = Context("dummy", model_dir, {}, 1, -1, "1.1.4")
+
+    # Similuate 2 threads bypassing check in handle() - calling initialize twice
+    inference_handler.initialize(CONTEXT)
+    inference_handler.initialize(CONTEXT)
+
+    CONTEXT.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
+    CONTEXT.metrics = MetricsStore(1, MODEL)
+    assert "output" in inference_handler.handle([{"body": b"dummy"}], CONTEXT)[0]
+    assert inference_handler.load({}, CONTEXT) == "Loading inference_tranform_fn.py"
+    assert (
+        inference_handler.transform_fn("model", "dummy", "application/json", "application/json", CONTEXT)
+        == "output dummy"
+    )
