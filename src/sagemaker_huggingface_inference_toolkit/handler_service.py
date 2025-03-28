@@ -301,23 +301,29 @@ class HuggingFaceHandlerService(ABC):
                 )
             self.log_func_implementation_found_or_not(load_fn, MODEL_FN)
             if load_fn is not None:
-                self.load_extra_arg = self.function_extra_arg(self.load, load_fn)
+                self.load_extra_arg = self.function_extra_arg(HuggingFaceHandlerService.load, load_fn)
                 self.load = load_fn
             self.log_func_implementation_found_or_not(preprocess_fn, INPUT_FN)
             if preprocess_fn is not None:
-                self.preprocess_extra_arg = self.function_extra_arg(self.preprocess, preprocess_fn)
+                self.preprocess_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.preprocess, preprocess_fn
+                )
                 self.preprocess = preprocess_fn
             self.log_func_implementation_found_or_not(predict_fn, PREDICT_FN)
             if predict_fn is not None:
-                self.predict_extra_arg = self.function_extra_arg(self.predict, predict_fn)
+                self.predict_extra_arg = self.function_extra_arg(HuggingFaceHandlerService.predict, predict_fn)
                 self.predict = predict_fn
             self.log_func_implementation_found_or_not(postprocess_fn, OUTPUT_FN)
             if postprocess_fn is not None:
-                self.postprocess_extra_arg = self.function_extra_arg(self.postprocess, postprocess_fn)
+                self.postprocess_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.postprocess, postprocess_fn
+                )
                 self.postprocess = postprocess_fn
             self.log_func_implementation_found_or_not(transform_fn, TRANSFORM_FN)
             if transform_fn is not None:
-                self.transform_extra_arg = self.function_extra_arg(self.transform_fn, transform_fn)
+                self.transform_extra_arg = self.function_extra_arg(
+                    HuggingFaceHandlerService.transform_fn, transform_fn
+                )
                 self.transform_fn = transform_fn
         else:
             logger.info(
@@ -342,8 +348,15 @@ class HuggingFaceHandlerService(ABC):
         1. the handle function takes context
         2. the handle function does not take context
         """
-        num_default_func_input = len(signature(default_func).parameters)
-        num_func_input = len(signature(func).parameters)
+        default_params = signature(default_func).parameters
+        func_params = signature(func).parameters
+
+        if "self" in default_params:
+            num_default_func_input = len(default_params) - 1
+        else:
+            num_default_func_input = len(default_params)
+
+        num_func_input = len(func_params)
         if num_default_func_input == num_func_input:
             # function takes context
             extra_args = [self.context]
