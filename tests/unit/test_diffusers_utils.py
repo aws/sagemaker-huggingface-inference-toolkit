@@ -28,7 +28,7 @@ def test_get_diffusers_pipeline():
             tmpdirname,
         )
         pipe = get_pipeline("text-to-image", -1, storage_dir)
-        assert isinstance(pipe, SMAutoPipelineForText2Image)
+        assert isinstance(pipe, DiffusionPipelineForText2Image)
 
 
 @slow
