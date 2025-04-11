@@ -33,7 +33,7 @@ if is_diffusers_available():
 
 
 class DiffusionPipelineForText2Image:
-    
+
     def __init__(self, model_dir: str, device: str = None):  # needs "cuda" for GPU
         self.pipeline = None
         dtype = torch.float32
