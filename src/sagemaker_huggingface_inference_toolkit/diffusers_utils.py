@@ -29,24 +29,22 @@ def is_diffusers_available():
 if is_diffusers_available():
     import torch
 
-    from diffusers import AutoPipelineForText2Image, DPMSolverMultistepScheduler, StableDiffusionPipeline
+    from diffusers import DiffusionPipeline
 
 
-class SMAutoPipelineForText2Image:
+class DiffusionPipelineForText2Image:
+    
     def __init__(self, model_dir: str, device: str = None):  # needs "cuda" for GPU
+        self.pipeline = None
         dtype = torch.float32
         if device == "cuda":
             dtype = torch.bfloat16 if is_torch_bf16_gpu_available() else torch.float16
-        device_map = "auto" if device == "cuda" else None
+            if torch.cuda.device_count() > 1:
+                device_map = "balanced"
+                self.pipeline = DiffusionPipeline.from_pretrained(model_dir, torch_dtype=dtype, device_map=device_map)
 
-        self.pipeline = AutoPipelineForText2Image.from_pretrained(model_dir, torch_dtype=dtype, device_map=device_map)
-        # try to use DPMSolverMultistepScheduler
-        if isinstance(self.pipeline, StableDiffusionPipeline):
-            try:
-                self.pipeline.scheduler = DPMSolverMultistepScheduler.from_config(self.pipeline.scheduler.config)
-            except Exception:
-                pass
-        self.pipeline.to(device)
+        if not self.pipeline:
+            self.pipeline = DiffusionPipeline.from_pretrained(model_dir, torch_dtype=dtype).to(device)
 
     def __call__(
         self,
@@ -64,7 +62,7 @@ class SMAutoPipelineForText2Image:
 
 
 DIFFUSERS_TASKS = {
-    "text-to-image": SMAutoPipelineForText2Image,
+    "text-to-image": DiffusionPipelineForText2Image,
 }
 
 
