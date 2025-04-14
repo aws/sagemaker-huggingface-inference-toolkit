@@ -32,7 +32,7 @@ if is_diffusers_available():
     from diffusers import DiffusionPipeline
 
 
-class DiffusionPipelineForText2Image:
+class SMDiffusionPipelineForText2Image:
 
     def __init__(self, model_dir: str, device: str = None):  # needs "cuda" for GPU
         self.pipeline = None
@@ -62,7 +62,7 @@ class DiffusionPipelineForText2Image:
 
 
 DIFFUSERS_TASKS = {
-    "text-to-image": DiffusionPipelineForText2Image,
+    "text-to-image": SMDiffusionPipelineForText2Image,
 }
 
 
