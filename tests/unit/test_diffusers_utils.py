@@ -16,7 +16,7 @@ import tempfile
 from transformers.testing_utils import require_torch, slow
 
 from PIL import Image
-from sagemaker_huggingface_inference_toolkit.diffusers_utils import SMAutoPipelineForText2Image
+from sagemaker_huggingface_inference_toolkit.diffusers_utils import SMDiffusionPipelineForText2Image
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
 
 
@@ -28,7 +28,7 @@ def test_get_diffusers_pipeline():
             tmpdirname,
         )
         pipe = get_pipeline("text-to-image", -1, storage_dir)
-        assert isinstance(pipe, SMAutoPipelineForText2Image)
+        assert isinstance(pipe, SMDiffusionPipelineForText2Image)
 
 
 @slow
