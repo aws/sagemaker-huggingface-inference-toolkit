@@ -23,7 +23,7 @@ from mms.context import Context, RequestProcessor
 from mms.metrics.metrics_store import MetricsStore
 from mock import Mock
 from sagemaker_huggingface_inference_toolkit import handler_service
-from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
+from sagemaker_huggingface_inference_toolkit.transformers_utils import _is_gpu_available, _load_model_from_hub, get_pipeline
 
 
 TASK = "text-classification"
@@ -63,6 +63,20 @@ def test_test_initialize(inference_handler):
         inference_handler.initialize(CONTEXT)
         assert inference_handler.initialized is True
 
+@require_torch
+@pytest.mark.skipif(not _is_gpu_available(), reason="No GPU available")
+@slow
+def test_initialize_without_gpu_id_fallback_to_first_gpu(inference_handler):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        storage_folder = _load_model_from_hub(
+            model_id=MODEL,
+            model_dir=tmpdirname,
+        )
+        CONTEXT = Context(MODEL, storage_folder, {}, 1, None, "1.1.4")
+
+        inference_handler.initialize(CONTEXT)
+        assert inference_handler.initialized is True
+        assert inference_handler.device == 0
 
 @require_torch
 def test_handle(inference_handler):
