@@ -22,6 +22,15 @@ For information on running Hugging Face jobs on Amazon SageMaker, please refer t
 For notebook examples: [SageMaker Notebook Examples](https://github.com/huggingface/notebooks/tree/master/sagemaker).
 
 ---
+## ⚠️ Ownership & Security Disclaimer
+
+Although this repository lives under the `aws/` GitHub organization, it is **co-owned by Hugging Face and AWS SageMaker** and is **not managed by AWS Security**. The code in this toolkit is authored and maintained by Hugging Face.
+
+**Reporting security issues:** Security issues in Hugging Face–maintained components (this toolkit and the underlying 🤗 Transformers, Diffusers, Optimum, and related libraries) should be reported to HuggingFace directly. See the [Hugging Face security policy](https://huggingface.co/docs/hub/security) for how to report vulnerabilities. 
+
+> **Note:** This package is on route to deprecation. Hugging Face will move to a fully Hugging Face–owned library for future inference images, and this repository will be archived once the transition is complete.
+
+---
 ## 💻  Getting Started with 🤗 Inference Toolkit
 
 _needs to be adjusted -> currently pseudo code_
