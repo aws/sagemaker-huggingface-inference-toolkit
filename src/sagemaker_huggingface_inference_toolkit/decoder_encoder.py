@@ -19,7 +19,6 @@ from io import BytesIO, StringIO
 
 import numpy as np
 from sagemaker_inference import errors
-from sagemaker_inference.decoder import _npy_to_numpy
 
 from mms.service import PredictionException
 from PIL import Image
@@ -28,6 +27,11 @@ from sagemaker_huggingface_inference_toolkit import content_types
 
 def decode_json(content):
     return json.loads(content)
+
+
+def _npy_to_numpy(npy_array):
+    """Convert an NPY payload to a NumPy array without loading pickled objects."""
+    return np.load(BytesIO(npy_array), allow_pickle=False)
 
 
 def decode_csv(string_like):  # type: (str) -> np.array
