@@ -20,7 +20,7 @@ from transformers.testing_utils import require_torch
 
 from mms.service import PredictionException
 from PIL import Image
-from sagemaker_huggingface_inference_toolkit import decoder_encoder
+from sagemaker_huggingface_inference_toolkit import content_types, decoder_encoder
 
 ENCODE_JSON_INPUT = {"upper": [1425], "lower": [576], "level": [2], "datetime": ["2012-08-08 15:30"]}
 ENCODE_CSV_INPUT = [
@@ -38,6 +38,27 @@ CONTENT_TYPE = "application/json"
 def test_decode_json():
     decoded_data = decoder_encoder.decode_json(json.dumps(DECODE_JSON_INPUT))
     assert decoded_data == DECODE_JSON_INPUT
+
+
+@pytest.mark.parametrize("dtype", [np.int64, np.float32, np.complex128, np.bool_, np.str_])
+@pytest.mark.parametrize("payload_type", [bytes, bytearray])
+def test_decode_npy(dtype, payload_type):
+    array = np.array([[0, 1], [2, 3]], dtype=dtype)
+    payload = payload_type(decoder_encoder.encode(array, content_types.NPY))
+
+    decoded = decoder_encoder.decode(payload, content_types.NPY)
+
+    np.testing.assert_array_equal(decoded, array)
+    assert decoded.dtype == array.dtype
+
+
+@pytest.mark.parametrize("payload_type", [bytes, bytearray])
+def test_decode_npy_rejects_object_arrays(payload_type):
+    array = np.array([{"value": 1}], dtype=object)
+    payload = payload_type(decoder_encoder.encode(array, content_types.NPY))
+
+    with pytest.raises(ValueError, match="Object arrays cannot be loaded when allow_pickle=False"):
+        decoder_encoder.decode(payload, content_types.NPY)
 
 
 def test_decode_csv():
