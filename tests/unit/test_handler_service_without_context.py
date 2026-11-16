@@ -14,6 +14,7 @@
 import json
 import os
 import tempfile
+from unittest.mock import Mock
 
 import pytest
 from sagemaker_inference import content_types
@@ -21,6 +22,7 @@ from transformers.testing_utils import require_torch, slow
 
 from mms.context import Context, RequestProcessor
 from mms.metrics.metrics_store import MetricsStore
+from mms.service import PredictionException
 from sagemaker_huggingface_inference_toolkit import handler_service
 from sagemaker_huggingface_inference_toolkit.transformers_utils import _load_model_from_hub, get_pipeline
 
@@ -125,6 +127,71 @@ def test_predict(inference_handler):
 def test_postprocess(inference_handler):
     output = inference_handler.postprocess(OUTPUT, content_types.JSON)
     assert isinstance(output, str)
+
+
+@pytest.mark.parametrize("key", ["custom_generate", "trust_remote_code"])
+@pytest.mark.parametrize("value", [True, False, None, "example/model"])
+@pytest.mark.parametrize("location", ["top", "generate_kwargs", "nested_dict", "nested_list", "nested_tuple"])
+@pytest.mark.parametrize("context", [None, object()])
+def test_predict_rejects_unsupported_parameters(inference_handler, key, value, location, context):
+    parameters = {key: value}
+    if location == "generate_kwargs":
+        parameters = {"generate_kwargs": parameters}
+    elif location == "nested_dict":
+        parameters = {"options": {"nested": parameters}}
+    elif location == "nested_list":
+        parameters = {"options": ["allowed", [{"nested": parameters}]]}
+    elif location == "nested_tuple":
+        parameters = {"options": ("allowed", parameters)}
+    model = Mock()
+
+    with pytest.raises(PredictionException, match=key) as error:
+        inference_handler.predict({"inputs": "Hello", "parameters": parameters}, model, context)
+
+    assert error.value.error_code == 400
+    model.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "parameters",
+    [
+        None,
+        {},
+        {"max_new_tokens": 4},
+        {"generate_kwargs": {"do_sample": False}},
+        {"options": ["custom_generate", {"names": ["trust_remote_code"]}]},
+    ],
+)
+def test_predict_passes_supported_parameters(inference_handler, parameters):
+    model = Mock(return_value="prediction")
+    data = {"inputs": "Hello", "parameters": parameters}
+
+    assert inference_handler.predict(data, model) == "prediction"
+
+    model.assert_called_once_with("Hello", **(parameters or {}))
+
+
+def test_predict_without_parameters(inference_handler):
+    model = Mock(return_value="prediction")
+
+    assert inference_handler.predict({"inputs": "Hello"}, model) == "prediction"
+
+    model.assert_called_once_with("Hello")
+
+
+@pytest.mark.parametrize("key", ["custom_generate", "trust_remote_code"])
+def test_handle_rejects_unsupported_parameters(inference_handler, key):
+    inference_handler.initialized = True
+    inference_handler.model = Mock()
+    context = Context("", "", {}, 1, -1, "1.1.4")
+    context.request_processor = [RequestProcessor({"Content-Type": "application/json"})]
+    payload = {"inputs": "Hello", "parameters": {"generate_kwargs": {key: True}}}
+
+    with pytest.raises(PredictionException, match=key) as error:
+        inference_handler.handle([{"body": json.dumps(payload).encode()}], context)
+
+    assert error.value.error_code == 400
+    inference_handler.model.assert_not_called()
 
 
 def test_validate_and_initialize_user_module(inference_handler):

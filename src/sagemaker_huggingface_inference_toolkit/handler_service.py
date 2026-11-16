@@ -42,6 +42,18 @@ TRANSFORM_FN = "transform_fn"
 logger = logging.getLogger(__name__)
 
 
+def _validate_parameters(parameters):
+    """Validate request parameters before passing them to the pipeline."""
+    if isinstance(parameters, dict):
+        for key, value in parameters.items():
+            if key in ("custom_generate", "trust_remote_code"):
+                raise PredictionException(f"Request parameter '{key}' is not supported.", 400)
+            _validate_parameters(value)
+    elif isinstance(parameters, (list, tuple)):
+        for value in parameters:
+            _validate_parameters(value)
+
+
 class HuggingFaceHandlerService(ABC):
     """Default handler service that is executed by the model server.
 
@@ -179,6 +191,7 @@ class HuggingFaceHandlerService(ABC):
 
         # pass inputs with all kwargs in data
         if parameters is not None:
+            _validate_parameters(parameters)
             prediction = model(inputs, **parameters)
         else:
             prediction = model(inputs)
